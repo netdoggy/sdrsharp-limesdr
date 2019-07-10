@@ -436,13 +436,13 @@ namespace SDRSharp.LimeSDR
 
         private void RefreshLabelLnaGain()
         {
-            string[] LnaValues = { "N/A", "-30", "-27", "-24", "-21", "-18", "-15", "-12", "-9", "-6", "-5", "-4", "-3", "-2", "-1", "Max" };
+            string[] LnaValues = { "N/A", "-30 (0dB)", "-27 (3dB)", "-24 (6dB)", "-21 (9dB)", "-18 (12dB)", "-15 (15dB)", "-12 (18dB)", "-9 (21dB)", "-6 (24dB)", "-5 (25dB)", "-4 (26dB)", "-3 (27dB)", "-2 (28)", "-1 (29dB)", "Max (30dB)" };
             lblLimeSDR_LNAGain.Text = LnaValues[tbLimeSDR_LNAGain.Value];
         }
 
         private void RefreshLabelTiaGain()
         {
-            string[] TiaValues = { "N/A", "-12", "-3", "Max" };
+            string[] TiaValues = { "N/A", "-12 (0dB)", "-3 (9dB)", "Max (12dB)" };
             lblLimeSDR_TIAGain.Text = TiaValues[tbLimeSDR_TIAGain.Value];
         }
 
