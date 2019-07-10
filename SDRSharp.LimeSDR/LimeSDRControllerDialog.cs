@@ -575,5 +575,10 @@ namespace SDRSharp.LimeSDR
         {
 
         }
+
+        private void lblLimeSDR_PGAGain_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
