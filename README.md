@@ -11,3 +11,6 @@ LimeSDR for SDR# Plugin
 	
 ## Download
 https://github.com/netdoggy/sdrsharp-limesdr/releases/download/0.3/sdrsharp-limesdr-0.3a.zip
+
+## Screenshot 
+<img width="300" src="https://raw.githubusercontent.com/netdoggy/sdrsharp-limesdr/master/SDRSharp.LimeSDR/SettingsScreen.jpg" />
