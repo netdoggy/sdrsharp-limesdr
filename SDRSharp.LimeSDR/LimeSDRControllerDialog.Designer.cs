@@ -59,6 +59,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.udFrequencyDiff = new System.Windows.Forms.NumericUpDown();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.tb_Temperature = new System.Windows.Forms.TextBox();
+            this.lbl_Temperature = new System.Windows.Forms.Label();
             this.txtSerialNumber = new System.Windows.Forms.TextBox();
             this.label17 = new System.Windows.Forms.Label();
             this.txtGatewareVersion = new System.Windows.Forms.TextBox();
@@ -79,8 +81,7 @@
             this.label11 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.toolTip_Gain = new System.Windows.Forms.ToolTip(this.components);
-            this.tb_Temperature = new System.Windows.Forms.TextBox();
-            this.lbl_Temperature = new System.Windows.Forms.Label();
+            this.timerTemp = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.tbLimeSDR_Gain)).BeginInit();
             this.grpChannel.SuspendLayout();
             this.grpAntenna.SuspendLayout();
@@ -135,9 +136,7 @@
             this.tbLimeSDR_Gain.Name = "tbLimeSDR_Gain";
             this.tbLimeSDR_Gain.Size = new System.Drawing.Size(265, 22);
             this.tbLimeSDR_Gain.TabIndex = 3;
-            this.toolTip_Gain.SetToolTip(this.tbLimeSDR_Gain, "Set the combined gain value in dB This function computes and sets the optimal gai" +
-        "n values of various amplifiers that are present in the device based on desired g" +
-        "ain value in dB.");
+            this.toolTip_Gain.SetToolTip(this.tbLimeSDR_Gain, "Set the combined gain value in dB This function computes and sets the optimal gain values of various amplifiers that are present in the device based on desired gain value in dB.");
             this.tbLimeSDR_Gain.Scroll += new System.EventHandler(this.gainBar_Scroll);
             // 
             // label2
@@ -149,6 +148,7 @@
             this.label2.Size = new System.Drawing.Size(38, 17);
             this.label2.TabIndex = 4;
             this.label2.Text = "Gain";
+            this.toolTip_Gain.SetToolTip(this.label2, "Automatic Gain Control\r\nRX gain control architecure: ANT->LNA->RxMIX(PLL)->RxTIA->RxLPF->RxPGA\r\n");
             // 
             // lblLimeSDR_GainDB
             // 
@@ -300,7 +300,7 @@
             this.udSpecOffset.TabIndex = 17;
             this.udSpecOffset.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udSpecOffset.Value = new decimal(new int[] {
-            100,
+            1,
             0,
             0,
             0});
@@ -390,6 +390,7 @@
             this.tbLimeSDR_PGAGain.Name = "tbLimeSDR_PGAGain";
             this.tbLimeSDR_PGAGain.Size = new System.Drawing.Size(265, 22);
             this.tbLimeSDR_PGAGain.TabIndex = 25;
+            this.toolTip_Gain.SetToolTip(this.tbLimeSDR_PGAGain, "RXPGA (programmable gain amplifier) provides gain control for the AGC if a constant RX signal level");
             this.tbLimeSDR_PGAGain.Value = 11;
             this.tbLimeSDR_PGAGain.Scroll += new System.EventHandler(this.tbLimeSDR_PGAGain_Scroll);
             // 
@@ -414,6 +415,7 @@
             this.tbLimeSDR_TIAGain.Name = "tbLimeSDR_TIAGain";
             this.tbLimeSDR_TIAGain.Size = new System.Drawing.Size(265, 22);
             this.tbLimeSDR_TIAGain.TabIndex = 23;
+            this.toolTip_Gain.SetToolTip(this.tbLimeSDR_TIAGain, "RXTIA (trans-impedance amplifier) offers 12 dB of control range. RXTIA is intended for AGC steps");
             this.tbLimeSDR_TIAGain.Value = 1;
             this.tbLimeSDR_TIAGain.Scroll += new System.EventHandler(this.tbLimeSDR_TIAGain_Scroll);
             // 
@@ -438,6 +440,7 @@
             this.tbLimeSDR_LNAGain.Name = "tbLimeSDR_LNAGain";
             this.tbLimeSDR_LNAGain.Size = new System.Drawing.Size(265, 22);
             this.tbLimeSDR_LNAGain.TabIndex = 21;
+            this.toolTip_Gain.SetToolTip(this.tbLimeSDR_LNAGain, "RXLNA (low noise amplifier) gain control consists of 30 dB with 1 dB steps at high gain");
             this.tbLimeSDR_LNAGain.Value = 15;
             this.tbLimeSDR_LNAGain.Scroll += new System.EventHandler(this.tbLimeSDR_LNAGain_Scroll);
             // 
@@ -450,6 +453,7 @@
             this.label6.Size = new System.Drawing.Size(69, 17);
             this.label6.TabIndex = 22;
             this.label6.Text = "LNA Gain";
+            this.label6.Click += new System.EventHandler(this.label6_Click);
             // 
             // label5
             // 
@@ -514,6 +518,27 @@
             this.groupBox4.TabIndex = 20;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Device Info";
+            // 
+            // tb_Temperature
+            // 
+            this.tb_Temperature.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Temperature.Location = new System.Drawing.Point(23, 501);
+            this.tb_Temperature.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Temperature.Name = "tb_Temperature";
+            this.tb_Temperature.ReadOnly = true;
+            this.tb_Temperature.Size = new System.Drawing.Size(276, 26);
+            this.tb_Temperature.TabIndex = 46;
+            this.tb_Temperature.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // lbl_Temperature
+            // 
+            this.lbl_Temperature.AutoSize = true;
+            this.lbl_Temperature.Location = new System.Drawing.Point(115, 481);
+            this.lbl_Temperature.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbl_Temperature.Name = "lbl_Temperature";
+            this.lbl_Temperature.Size = new System.Drawing.Size(90, 17);
+            this.lbl_Temperature.TabIndex = 45;
+            this.lbl_Temperature.Text = "Temperature";
             // 
             // txtSerialNumber
             // 
@@ -721,26 +746,11 @@
             this.toolTip_Gain.ShowAlways = true;
             this.toolTip_Gain.Popup += new System.Windows.Forms.PopupEventHandler(this.toolTip_Gain_Popup);
             // 
-            // tb_Temperature
+            // timerTemp
             // 
-            this.tb_Temperature.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_Temperature.Location = new System.Drawing.Point(23, 501);
-            this.tb_Temperature.Margin = new System.Windows.Forms.Padding(4);
-            this.tb_Temperature.Name = "tb_Temperature";
-            this.tb_Temperature.ReadOnly = true;
-            this.tb_Temperature.Size = new System.Drawing.Size(276, 26);
-            this.tb_Temperature.TabIndex = 46;
-            this.tb_Temperature.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // lbl_Temperature
-            // 
-            this.lbl_Temperature.AutoSize = true;
-            this.lbl_Temperature.Location = new System.Drawing.Point(115, 481);
-            this.lbl_Temperature.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lbl_Temperature.Name = "lbl_Temperature";
-            this.lbl_Temperature.Size = new System.Drawing.Size(90, 17);
-            this.lbl_Temperature.TabIndex = 45;
-            this.lbl_Temperature.Text = "Temperature";
+            this.timerTemp.Enabled = true;
+            this.timerTemp.Interval = 5000;
+            this.timerTemp.Tick += new System.EventHandler(this.timerTemp_Tick);
             // 
             // LimeSDRControllerDialog
             // 
@@ -758,7 +768,7 @@
             this.Name = "LimeSDRControllerDialog";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
-            this.Text = "LimeSDR Controller YT7PWR / Update netdog   v0.3a";
+            this.Text = "LimeSDR Controller YT7PWR / netdog  v0.4";
             this.TopMost = true;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LimeSDRControllerDialog_FormClosing);
             this.Load += new System.EventHandler(this.LimeSDRControllerDialog_Load);
@@ -832,5 +842,6 @@
         private System.Windows.Forms.ToolTip toolTip_Gain;
         private System.Windows.Forms.TextBox tb_Temperature;
         private System.Windows.Forms.Label lbl_Temperature;
+        private System.Windows.Forms.Timer timerTemp;
     }
 }

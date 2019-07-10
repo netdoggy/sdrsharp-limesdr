@@ -26,7 +26,8 @@ namespace SDRSharp.LimeSDR
         private bool _initialized;
         public double _sampleRate = 1.5 * 1e6;
         public double _freqDiff = 0.0;
-
+        private Dictionary<int, string> _sampleRates = new Dictionary<int, string>();
+       
         public LimeSDRControllerDialog(LimeSDRIO owner)
         {
             try
@@ -48,19 +49,24 @@ namespace SDRSharp.LimeSDR
 
                 comboRadioModel.Text = Utils.GetStringSetting("LimeSDR model", "");
                 tbLimeSDR_Gain.Value = Utils.GetIntSetting("LimeSDR Gain", 40);
-                gainBar_Scroll(this, EventArgs.Empty);
-                lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value.ToString();
-                samplerateComboBox.Text = Utils.GetStringSetting("LimeSDR SampleRate", "768000");
+                gainBar_Scroll(this, EventArgs.Empty); // force resave param to lime device?                 
+                lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value.ToString()+"dB";
+                samplerateComboBox.SelectedValue = Int32.Parse(Utils.GetStringSetting("LimeSDR SampleRate", "768000"));
                 LPBWcomboBox.Text = Utils.GetStringSetting("LimeSDR LPBW", "1.5MHz");
                 rx0.Checked = Utils.GetBooleanSetting("LimeSDR RX0");
                 rx1.Checked = Utils.GetBooleanSetting("LimeSDR RX1");
                 ant_l.Checked = Utils.GetBooleanSetting("LimeSDR ANT_L");
                 ant_h.Checked = Utils.GetBooleanSetting("LimeSDR ANT_H");
                 ant_w.Checked = Utils.GetBooleanSetting("LimeSDR ANT_W");
-                udSpecOffset.Value = (decimal)Utils.GetDoubleSetting("LimeSDR SpecOffset", 50);
+                udSpecOffset.Value = (decimal)Utils.GetDoubleSetting("LimeSDR SpecOffset", 1);
+                udSpecOffset_ValueChanged(this, EventArgs.Empty); // force resave param  SpecOffset to Onwer (device) obj
                 udFrequencyDiff.Value = (decimal)Utils.GetDoubleSetting("LimeSDR Frequency diff.", 0.0);
                 RefreshLimeSdrTemp();
+                toolTip_Gain.SetToolTip(lblLimeSDR_GainDB, "");
                 toolTip_Gain.SetToolTip(tbLimeSDR_Gain, "");
+                toolTip_Gain.SetToolTip(tbLimeSDR_LNAGain, "");
+                toolTip_Gain.SetToolTip(tbLimeSDR_PGAGain, "");
+                toolTip_Gain.SetToolTip(tbLimeSDR_TIAGain, "");
 
             }
             catch (Exception ex)
@@ -79,23 +85,38 @@ namespace SDRSharp.LimeSDR
 
         private void InitSampleRates()
         {
-            samplerateComboBox.Items.Add("192000");
-            samplerateComboBox.Items.Add("384000");
-            samplerateComboBox.Items.Add("768000");
-            samplerateComboBox.Items.Add("1536000");
-            samplerateComboBox.Items.Add("2304000");
-            samplerateComboBox.Items.Add("3072000");
-            samplerateComboBox.Items.Add("6144000");
-            samplerateComboBox.Items.Add("8192000");
-            samplerateComboBox.Items.Add("12288000");
-            samplerateComboBox.Items.Add("19200000");
-            samplerateComboBox.Items.Add("24576000");
-            samplerateComboBox.Items.Add("30000000");
-            samplerateComboBox.Items.Add("35000000");
-            samplerateComboBox.Items.Add("40000000");
-            samplerateComboBox.Items.Add("49152000");
-            samplerateComboBox.Items.Add("55296000");
-            samplerateComboBox.Text = "768000";
+            int[] sampleRates =
+            {
+                192000,
+                384000,
+                768000,
+                1536000,
+                2304000,
+                3072000,
+                6144000,
+                8192000,
+                12288000,
+                19200000,
+                24576000,
+                30000000,
+                35000000,
+                40000000,
+                49152000,
+                55296000
+            };
+
+            foreach (var sr in sampleRates) {
+                var displayValue = Math.Round(sr / 1e6f, 4);
+                _sampleRates.Add(sr, displayValue.ToString() + "M");
+            }
+
+            
+            samplerateComboBox.DataSource = new BindingSource(_sampleRates, null);
+            samplerateComboBox.DisplayMember = "Value";
+            samplerateComboBox.ValueMember = "Key";
+            samplerateComboBox.SelectedValue = 2304000;
+            // string key = ((KeyValuePair<string, string>)samplerateComboBox.SelectedItem).Key;
+            // string value = ((KeyValuePair<string, string>)samplerateComboBox.SelectedItem).Value;
         }
 
         public double LPBW
@@ -105,16 +126,18 @@ namespace SDRSharp.LimeSDR
 
         private void samplerateComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            int value = ((KeyValuePair<int, string>)samplerateComboBox.SelectedItem).Key;
+
             if (!Initialized)
             {
-                _sampleRate = double.Parse((samplerateComboBox.Text));
+                _sampleRate = value; // double.Parse((samplerateComboBox.Text));
                 return;
             }
 
             try
             {
-                _sampleRate = double.Parse((samplerateComboBox.Text));
-                Utils.SaveSetting("LimeSDR SampleRate", samplerateComboBox.Text);
+                _sampleRate = value; //  double.Parse((samplerateComboBox.Text));
+                Utils.SaveSetting("LimeSDR SampleRate", value);
                 _owner._sampleRate = _sampleRate;
 
                 if (_owner.Device != null)
@@ -145,10 +168,9 @@ namespace SDRSharp.LimeSDR
                 return;
             }
 
-
            
             _owner.Gain = tbLimeSDR_Gain.Value; // write to device
-            lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value + " dB";
+            lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value + "dB";
             Utils.SaveSetting("LimeSDR Gain", (int)tbLimeSDR_Gain.Value);
 
             // read from device if open
@@ -540,6 +562,16 @@ namespace SDRSharp.LimeSDR
         }
 
         private void label_Temp_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void timerTemp_Tick(object sender, EventArgs e)
+        {
+            RefreshLimeSdrTemp();
+        }
+
+        private void label6_Click(object sender, EventArgs e)
         {
 
         }

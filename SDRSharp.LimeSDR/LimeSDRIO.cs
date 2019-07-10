@@ -331,12 +331,14 @@ namespace SDRSharp.LimeSDR
 
                 _isStreaming = true;
                 _gui.RefreshFormAllGains();
+                _gui.GetLimeSDRDeviceInfo();
             }
             catch(Exception ex)
             {
                 _gui.grpChannel.Enabled = true;
                 _gui.samplerateComboBox.Enabled = true;
                 Debug.Write(ex.ToString());
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -367,6 +369,8 @@ namespace SDRSharp.LimeSDR
                 _LimeDev.LPBW = _gui.LPBW;
 
                 _isStreaming = true;
+                _gui.RefreshFormAllGains();
+                _gui.GetLimeSDRDeviceInfo();
             }
             catch (Exception ex)
             {

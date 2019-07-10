@@ -229,8 +229,12 @@ namespace SDRSharp.LimeSDR
                     Thread.Sleep(100);
                 }
 
-                NativeMethods.LMS_RecvStream(_stream, _samplesPtr, _readLength, ref meta, SampleTimeoutMs);
-
+                var samplesReceived = NativeMethods.LMS_RecvStream(_stream, _samplesPtr, _readLength, ref meta, SampleTimeoutMs);
+                if (samplesReceived < 0)
+                {
+                    MessageBox.Show("LimeSDRDevice::ReceiveSamples_sync read error");
+                    break;
+                }
                 var ptrIq = _iqPtr;
 
                 for (int i = 0; i < _readLength; i++)
@@ -363,57 +367,45 @@ namespace SDRSharp.LimeSDR
 
             this.SampleRate = _sampleRate;
 
+            uint oversample = 32;
             if (SampleRate < 384000)
             {
-                if (NativeMethods.LMS_SetSampleRateDir(_device, LMS_CH_RX, SampleRate, 32) != 0)
-                {
-                    throw new ApplicationException(NativeMethods.limesdr_strerror());
-                }
+                oversample = 32;              
             }
             else
             {
                 if (SampleRate > 32000000)
                 {
-                    if (NativeMethods.LMS_SetSampleRateDir(_device, LMS_CH_RX, SampleRate, 0) != 0)
-                    {
-                        throw new ApplicationException(NativeMethods.limesdr_strerror());
-                    }
+                    oversample = 0;
                 }
                 else if (SampleRate > 16000000)
                 {
-                    if (NativeMethods.LMS_SetSampleRateDir(_device, LMS_CH_RX, SampleRate, 4) != 0)
-                    {
-                        throw new ApplicationException(NativeMethods.limesdr_strerror());
-                    }
+                    oversample = 4;
+ 
                 }
                 else if (SampleRate > 8000000)
                 {
-                    if (NativeMethods.LMS_SetSampleRateDir(_device, LMS_CH_RX, SampleRate, 8) != 0)
-                    {
-                        throw new ApplicationException(NativeMethods.limesdr_strerror());
-                    }
+                    oversample = 8;
+    
                 }
                 else if (SampleRate > 4000000)
                 {
-                    if (NativeMethods.LMS_SetSampleRateDir(_device, LMS_CH_RX, (double)(SampleRate), 16) != 0)
-                    {
-                        throw new ApplicationException(NativeMethods.limesdr_strerror());
-                    }
+                    oversample = 16;
+
                 }
                 else if (SampleRate > 2000000)
                 {
-                    if (NativeMethods.LMS_SetSampleRateDir(_device, LMS_CH_RX, SampleRate, 32) != 0)
-                    {
-                        throw new ApplicationException(NativeMethods.limesdr_strerror());
-                    }
+                    oversample = 32;               
                 }
                 else
                 {
-                    if (NativeMethods.LMS_SetSampleRateDir(_device, LMS_CH_RX, SampleRate, 32) != 0)
-                    {
-                        throw new ApplicationException(NativeMethods.limesdr_strerror());
-                    }
+                    oversample = 32;   
                 }
+            }
+
+            if (NativeMethods.LMS_SetSampleRateDir(_device, LMS_CH_RX, SampleRate, oversample) != 0)
+            {
+                throw new ApplicationException(NativeMethods.limesdr_strerror());
             }
 
             if (NativeMethods.LMS_SetGaindB(_device, LMS_CH_RX, _channel, _gain) != 0)
