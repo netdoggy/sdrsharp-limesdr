@@ -1,7 +1,8 @@
 ﻿/*
  * Based on project from https://github.com/jocover/sdrsharp-limesdr
  * 
- * modifications by YT7PWR 2018
+ * modifications by YT7PWR 2018 https://github.com/GoranRadivojevic/sdrsharp-limesdr
+ * modifications by netdog 2019 https://github.com/netdoggy/sdrsharp-limesdr
  */
 
 using System;
@@ -209,11 +210,20 @@ namespace SDRSharp.LimeSDR
         [DllImport(APIDLL, EntryPoint = "LMS_WriteParam", CallingConvention = CallingConvention.Cdecl)]
         public static extern int LMS_WriteParam(IntPtr device, LMS7Parameter param, UInt16 val);
 
+        [DllImport(APIDLL, EntryPoint = "LMS_ReadParam", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int LMS_ReadParam(IntPtr device, LMS7Parameter param, ref UInt16 val);
+
         [DllImport(APIDLL, EntryPoint = "LMS_GetLOFrequency", CallingConvention = CallingConvention.Cdecl)]
         public static extern int LMS_GetLOFrequency(IntPtr device, bool dir_tx, uint chan, ref double frequency);
 
+        [DllImport(APIDLL, EntryPoint = "LMS_GetChipTemperature", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int LMS_GetChipTemperature(IntPtr device, uint index, ref double temp);
+
         [DllImport(APIDLL, EntryPoint = "LMS_SetGaindB", CallingConvention = CallingConvention.Cdecl)]
         public static extern int LMS_SetGaindB(IntPtr device, bool dir_tx, uint chan, uint gain);
+
+        [DllImport(APIDLL, EntryPoint = "LMS_GetGaindB", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int LMS_GetGaindB(IntPtr device, bool dir_tx, uint chan, ref uint gain);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetLPFBW", CallingConvention = CallingConvention.Cdecl)]
         public unsafe static extern int LMS_SetLPFBW(IntPtr device, bool dir_tx, uint chan, double bandwidth);
@@ -222,8 +232,7 @@ namespace SDRSharp.LimeSDR
         public static extern int LMS_SetNCOIndex(IntPtr device, bool dir_tx, uint chan, int index, bool downconv);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetNCOFrequency", CallingConvention = CallingConvention.Cdecl)]
-        public static unsafe extern int LMS_SetNCOFrequency(IntPtr device, bool dir_tx, uint chan, double* frequency,
-    double pho);
+        public static unsafe extern int LMS_SetNCOFrequency(IntPtr device, bool dir_tx, uint chan, double* frequency,     double pho);
 
         [DllImport(APIDLL, EntryPoint = "LMS_GetDeviceInfo", CallingConvention = CallingConvention.Cdecl)]
         public unsafe static extern void* LMS_GetDeviceInfo(IntPtr device);

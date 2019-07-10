@@ -1,7 +1,8 @@
 ﻿/*
  * Based on project from https://github.com/jocover/sdrsharp-limesdr
  * 
- * modifications by YT7PWR 2018
+ * modifications by YT7PWR 2018 https://github.com/GoranRadivojevic/sdrsharp-limesdr
+ * modifications by netdog 2019 https://github.com/netdoggy/sdrsharp-limesdr
  */
 
 using System;
@@ -33,9 +34,9 @@ namespace SDRSharp.LimeSDR
         private float _specOffset = 100.0f;
         public string RadioName = "";
         private double _freqDiff = 0.0;
-        private ushort _lnaGain = 21;
-        private ushort _tiaGain = 3;
-        private ushort _pgaGain = 10;
+        private ushort _lnaGain = 9;
+        private ushort _tiaGain = 1;
+        private ushort _pgaGain = 11;
 
         #endregion
 
@@ -96,6 +97,10 @@ namespace SDRSharp.LimeSDR
         {
             get
             {
+                if (_LimeDev != null)
+                {
+                    _gain = _LimeDev.Gain;
+                }
                 return _gain;
             }
 
@@ -169,6 +174,15 @@ namespace SDRSharp.LimeSDR
                     _LimeDev.LNAgain = _lnaGain;
                 }
             }
+
+            get
+            {
+                if (_LimeDev != null)
+                {
+                    _lnaGain = _LimeDev.LNAgain;
+                }
+                return _lnaGain;
+            }
         }
 
         public ushort TIAgain
@@ -182,6 +196,15 @@ namespace SDRSharp.LimeSDR
                     _LimeDev.TIAgain = _tiaGain;
                 }
             }
+
+            get
+            {
+                if (_LimeDev != null)
+                {
+                    _tiaGain = _LimeDev.TIAgain;
+                }
+                return _tiaGain;
+            }
         }
 
         public ushort PGAgain
@@ -194,6 +217,14 @@ namespace SDRSharp.LimeSDR
                 {
                     _LimeDev.PGAgain = _pgaGain;
                 }
+            }
+            get
+            {
+                if (_LimeDev != null)
+                {
+                    _pgaGain = _LimeDev.PGAgain;
+                }
+                return _pgaGain;
             }
         }
 
@@ -299,6 +330,7 @@ namespace SDRSharp.LimeSDR
                 _LimeDev.LPBW = _gui.LPBW;
 
                 _isStreaming = true;
+                _gui.RefreshFormAllGains();
             }
             catch(Exception ex)
             {
@@ -393,6 +425,7 @@ namespace SDRSharp.LimeSDR
 
             _gui.Show();
             _gui.Activate();
+            _gui.RefreshLimeSdrTemp();
 
         }
 

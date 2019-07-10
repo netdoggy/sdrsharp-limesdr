@@ -1,7 +1,8 @@
 ﻿/*
  * Based on project from https://github.com/jocover/sdrsharp-limesdr
  * 
- * modifications by YT7PWR 2018
+ * modifications by YT7PWR 2018 https://github.com/GoranRadivojevic/sdrsharp-limesdr
+ * modifications by netdog 2019 https://github.com/netdoggy/sdrsharp-limesdr
  */
 
 using System;
@@ -43,6 +44,9 @@ namespace SDRSharp.LimeSDR
         private double _centerFrequency = DefaultFrequency;
         private double _old_centerFrequency = DefaultFrequency;
         private uint _gain = 40;
+        private ushort _lnaGain = 9;
+        private ushort _tiaGain = 1;
+        private ushort _pgaGain = 11;
 
         public const bool LMS_CH_TX = true;
         public const bool LMS_CH_RX = false;
@@ -54,12 +58,11 @@ namespace SDRSharp.LimeSDR
         private double _lpbw = 1.5 * 1e6;
         public float SpectrumOffset = 100.0f;
         private double _freqDiff = 0.0;
-        private ushort _lnaGain = 21;
-        private ushort _tiaGain = 3;
-        private ushort _pgaGain = 10;
+    
         LMS7Parameter PGA_gain = new LMS7Parameter();
         LMS7Parameter TIA_gain = new LMS7Parameter();
         LMS7Parameter LNA_gain = new LMS7Parameter();
+        LMS7Parameter G_RXLOOPB_RFE = new LMS7Parameter();
 
         #endregion
 
@@ -88,6 +91,23 @@ namespace SDRSharp.LimeSDR
         {
             set
             {
+                /* G_LNA_RFE_
+                15 – Gmax (default)
+               14 – Gmax-1
+               13 – Gmax-2
+               12 – Gmax-3
+               11 – Gmax-4
+               10 – Gmax-5
+               9 – Gmax-6
+               8 – Gmax-9
+               7 – Gmax-12
+               6 – Gmax-15
+               5 – Gmax-18
+               4 – Gmax-21
+               3 – Gmax-24
+               2 – Gmax-27
+               1 – Gmax-30
+               */
                 _lnaGain = value;
 
                 if (_isStreaming)
@@ -97,6 +117,20 @@ namespace SDRSharp.LimeSDR
                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                     }
                 }
+            }
+
+            get
+            {
+
+                if (_isStreaming)
+                {
+                    if (NativeMethods.LMS_ReadParam(_device, LNA_gain, ref _lnaGain) != 0)
+                    {
+                        throw new ApplicationException(NativeMethods.limesdr_strerror());
+                    }
+                    
+                }
+                return _lnaGain;
             }
         }
 
@@ -114,6 +148,18 @@ namespace SDRSharp.LimeSDR
                     }
                 }
             }
+
+            get
+            {
+                if (_isStreaming)
+                {
+                    if (NativeMethods.LMS_ReadParam(_device, TIA_gain, ref _tiaGain) != 0)
+                    {
+                        throw new ApplicationException(NativeMethods.limesdr_strerror());
+                    }
+                }
+                return _tiaGain;
+            }
         }
 
         public ushort PGAgain
@@ -130,6 +176,29 @@ namespace SDRSharp.LimeSDR
                     }
                 }
             }
+
+            get
+            {
+                if (_isStreaming)
+                {
+                    if (NativeMethods.LMS_ReadParam(_device, PGA_gain, ref _pgaGain) != 0)
+                    {
+                        throw new ApplicationException(NativeMethods.limesdr_strerror());
+                    }
+                }
+                return _pgaGain;
+            }
+        }
+
+        public double Temp()
+        {
+            double temp = 0;
+
+            if (_isStreaming && NativeMethods.LMS_GetChipTemperature(_device, 0, ref temp) != 0)
+            {
+                throw new ApplicationException(NativeMethods.limesdr_strerror());
+            }
+            return temp;
         }
 
         #endregion
@@ -184,6 +253,9 @@ namespace SDRSharp.LimeSDR
         {
             _parrent = parrent;
 
+            // G_PGA_RBB_(1, 2)[4:0]: This is the gain of the PGA. The gain is adaptively set to
+            // maintain signal swing of 0.6Vpkd at the output of the PGA. The value of the gain is:
+            // Gain(dB) = -12+G_PGA_RBB. Default
             PGA_gain.address = 0x0119;
             PGA_gain.msb = 4;
             PGA_gain.lsb = 0;
@@ -197,6 +269,13 @@ namespace SDRSharp.LimeSDR
             TIA_gain.defaultValue = 3;
             TIA_gain.name = "G_TIA_RFE";
             TIA_gain.tooltip = "Controls the Gain of the TIA";
+
+            G_RXLOOPB_RFE.address = 0x0113;
+            G_RXLOOPB_RFE.msb = 5;
+            G_RXLOOPB_RFE.lsb = 2;
+            G_RXLOOPB_RFE.defaultValue = 0;
+            G_RXLOOPB_RFE.name = "G_RXLOOPB_RFE";
+            G_RXLOOPB_RFE.tooltip = "Controls RXFE loopback gain (Should be '0' when actual LNAs are working)";
 
             LNA_gain.address = 0x0113;
             LNA_gain.msb = 9;
@@ -537,6 +616,19 @@ namespace SDRSharp.LimeSDR
         {
             get
             {
+
+                if (_isStreaming)
+                {
+                    if (_device != IntPtr.Zero)
+                    {
+                        if (NativeMethods.LMS_GetGaindB(_device, LMS_CH_RX, _channel, ref _gain) != 0)
+                        {
+                            throw new ApplicationException(NativeMethods.limesdr_strerror());
+                        }
+
+                    }
+                }
+
                 return _gain;
             }
 
