@@ -444,8 +444,7 @@
             this.tbLimeSDR_PGAGain.Name = "tbLimeSDR_PGAGain";
             this.tbLimeSDR_PGAGain.Size = new System.Drawing.Size(284, 22);
             this.tbLimeSDR_PGAGain.TabIndex = 25;
-            this.toolTip_Gain.SetToolTip(this.tbLimeSDR_PGAGain, "RXPGA (programmable gain amplifier) provides gain control for the AGC if a consta" +
-        "nt RX signal level");
+            this.toolTip_Gain.SetToolTip(this.tbLimeSDR_PGAGain, "RXPGA (programmable gain amplifier) provides gain control for the AGC if a constant RX signal level");
             this.tbLimeSDR_PGAGain.Value = 11;
             this.tbLimeSDR_PGAGain.Scroll += new System.EventHandler(this.tbLimeSDR_PGAGain_Scroll);
             // 
