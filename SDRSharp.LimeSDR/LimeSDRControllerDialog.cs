@@ -150,7 +150,7 @@ namespace SDRSharp.LimeSDR
                 if (_owner.Device != null)
                     _owner.Device.SampleRate = _sampleRate;
             }
-            catch
+            catch  (Exception ex)
             {
                 _sampleRate = 1.5 * 1e6;
             }
@@ -480,6 +480,9 @@ namespace SDRSharp.LimeSDR
 
         public void RefreshLimeSdrTemp()
         {
+            if (_owner == null || _owner.Device == null)
+                return;
+
             var temp = _owner.Device.Temp();
             //label_Temp.Text = 
             tb_Temperature.Text = temp == 0 ? "N/A" : Math.Round(temp, 2).ToString() + " C";
