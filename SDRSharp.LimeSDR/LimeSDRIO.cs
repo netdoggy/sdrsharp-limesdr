@@ -16,7 +16,7 @@ using System.Diagnostics;
 
 namespace SDRSharp.LimeSDR
 {
-    public class LimeSDRIO : IFrontendController, IIQStreamController, IDisposable, IFloatingConfigDialogProvider, ITunableSource, ISampleRateChangeSource
+    public class LimeSDRIO : IFrontendController, IIQStreamController, IDisposable, IFloatingConfigDialogProvider, ITunableSource // @todo: buggy ISampleRateChangeSource
     {
         #region variable
 
@@ -338,7 +338,7 @@ namespace SDRSharp.LimeSDR
                 _gui.grpChannel.Enabled = true;
                 _gui.samplerateComboBox.Enabled = true;
                 Debug.Write(ex.ToString());
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
         }
 

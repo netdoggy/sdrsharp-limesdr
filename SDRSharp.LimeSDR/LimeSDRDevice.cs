@@ -17,7 +17,7 @@ using System.Diagnostics;
 
 namespace SDRSharp.LimeSDR
 {
-    public class LimeSDRDevice
+    public class LimeSDRDevice : IDisposable
     {
         #region variable 
 
@@ -294,6 +294,7 @@ namespace SDRSharp.LimeSDR
             Dispose();
         }
 
+
         private unsafe void ComplexSamplesAvailable(Complex* buffer, int length)
         {
             if (SamplesAvailable != null)
@@ -314,7 +315,7 @@ namespace SDRSharp.LimeSDR
 
         public void Dispose()
         {
-            this.Stop();
+            Stop();
             GC.SuppressFinalize(this);
             _device = IntPtr.Zero;
         }
