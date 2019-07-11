@@ -10,7 +10,7 @@ LimeSDR for SDR# Plugin
 	&lt;add key="LimeSDR" value="SDRSharp.LimeSDR.LimeSDRIO,SDRSharp.LimeSDR" /&gt;
 	
 ## Download
-https://github.com/netdoggy/sdrsharp-limesdr/releases/download/0.3/sdrsharp-limesdr-0.3a.zip
+https://github.com/netdoggy/sdrsharp-limesdr/releases
 
 ## Screenshot 
 <img width="300" src="https://raw.githubusercontent.com/netdoggy/sdrsharp-limesdr/master/SDRSharp.LimeSDR/SettingsScreen.jpg" />
