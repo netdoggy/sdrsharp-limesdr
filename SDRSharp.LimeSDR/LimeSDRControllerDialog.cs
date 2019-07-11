@@ -121,7 +121,14 @@ namespace SDRSharp.LimeSDR
 
         public double LPBW
         {
-            get { return (double)(UInt32)(double.Parse(LPBWcomboBox.Text.Replace("MHz", "")) * 1e6); }
+            get
+            {
+                var commaCulture = new System.Globalization.CultureInfo("en")
+                {
+                    NumberFormat = { NumberDecimalSeparator = "." }
+                };
+                return (double)(UInt32)(double.Parse(LPBWcomboBox.Text.Replace("MHz", ""), commaCulture) * 1e6);
+            }
         }
 
         private void samplerateComboBox_SelectedIndexChanged(object sender, EventArgs e)
