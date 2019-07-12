@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using SDRSharp.Radio;
 using System.Windows.Forms;
 using System.Diagnostics;
@@ -20,12 +19,12 @@ namespace SDRSharp.LimeSDR
     {
         #region variable
 
-        private long _frequency;
-        private LimeSDRDevice _LimeDev = null;
+        private long _frequency = 105500000L;
+        private LimeSDRDevice _limeSDRDevice = null;
         private readonly LimeSDRControllerDialog _gui;
-        private SDRSharp.Radio.SamplesAvailableDelegate _callback;
-        public event EventHandler SampleRateChanged;
-        public bool _isStreaming;
+        private SDRSharp.Radio.SamplesAvailableDelegate _callbackSamplesAvailable;
+        //public event EventHandler SampleRateChanged;
+        //public bool _isStreaming;
         private uint _channel = 0;      // rx0
         private uint _ant = 2;          // ant_l
         private double _lpbw = 1.5 * 1e6;
@@ -44,7 +43,7 @@ namespace SDRSharp.LimeSDR
 
         public LimeSDRDevice Device
         {
-            get { return _LimeDev; }
+            get { return _limeSDRDevice; }
         }
 
         public IntPtr LimeSDR_Device
@@ -52,7 +51,7 @@ namespace SDRSharp.LimeSDR
             get
             {
                 if (Device != null)
-                    return Device._device;
+                    return Device._lms_device;
                 else
                     return IntPtr.Zero;
             }
@@ -68,9 +67,9 @@ namespace SDRSharp.LimeSDR
             {
                 _channel = value;
 
-                if(_LimeDev != null)
+                if(_limeSDRDevice != null)
                 {
-                    _LimeDev.Channel = _channel;
+                    _limeSDRDevice.Channel = _channel;
                 }
             }
         }
@@ -86,9 +85,9 @@ namespace SDRSharp.LimeSDR
             {
                 _lpbw = value;
 
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _LimeDev.LPBW = _lpbw;
+                    _limeSDRDevice.LPBW = _lpbw;
                 }
             }
         }
@@ -97,9 +96,9 @@ namespace SDRSharp.LimeSDR
         {
             get
             {
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _gain = _LimeDev.Gain;
+                    _gain = _limeSDRDevice.Gain;
                 }
                 return _gain;
             }
@@ -108,9 +107,9 @@ namespace SDRSharp.LimeSDR
             {
                 _gain = (uint)value;
 
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _LimeDev.Gain = _gain;
+                    _limeSDRDevice.Gain = _gain;
                 }
             }
         }
@@ -125,9 +124,9 @@ namespace SDRSharp.LimeSDR
             {
                 _ant = value;
 
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _LimeDev.Antenna = _ant;
+                    _limeSDRDevice.Antenna = _ant;
                 }
             }
         }
@@ -143,9 +142,9 @@ namespace SDRSharp.LimeSDR
             {
                 _specOffset = value;
 
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _LimeDev.SpectrumOffset = _specOffset;
+                    _limeSDRDevice.SpectrumOffset = _specOffset;
                 }
             }
         }
@@ -156,9 +155,9 @@ namespace SDRSharp.LimeSDR
             {
                 _freqDiff = value;
 
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _LimeDev.FreqDiff = _freqDiff;
+                    _limeSDRDevice.FreqDiff = _freqDiff;
                 }
             }
         }
@@ -169,17 +168,17 @@ namespace SDRSharp.LimeSDR
             {
                 _lnaGain = value;
 
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _LimeDev.LNAgain = _lnaGain;
+                    _limeSDRDevice.LNAgain = _lnaGain;
                 }
             }
 
             get
             {
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _lnaGain = _LimeDev.LNAgain;
+                    _lnaGain = _limeSDRDevice.LNAgain;
                 }
                 return _lnaGain;
             }
@@ -191,17 +190,17 @@ namespace SDRSharp.LimeSDR
             {
                 _tiaGain = value;
 
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _LimeDev.TIAgain = _tiaGain;
+                    _limeSDRDevice.TIAgain = _tiaGain;
                 }
             }
 
             get
             {
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _tiaGain = _LimeDev.TIAgain;
+                    _tiaGain = _limeSDRDevice.TIAgain;
                 }
                 return _tiaGain;
             }
@@ -213,16 +212,16 @@ namespace SDRSharp.LimeSDR
             {
                 _pgaGain = value;
 
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _LimeDev.PGAgain = _pgaGain;
+                    _limeSDRDevice.PGAgain = _pgaGain;
                 }
             }
             get
             {
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
-                    _pgaGain = _LimeDev.PGAgain;
+                    _pgaGain = _limeSDRDevice.PGAgain;
                 }
                 return _pgaGain;
             }
@@ -233,9 +232,9 @@ namespace SDRSharp.LimeSDR
         #region constructor/destructor
 
         public LimeSDRIO()
-        {
+        {           
             _gui = new LimeSDRControllerDialog(this);
-            _sampleRate = _gui._sampleRate;
+            _sampleRate = _gui._sampleRate;          
         }
 
         ~LimeSDRIO()
@@ -258,46 +257,46 @@ namespace SDRSharp.LimeSDR
 
         #endregion
 
-        private unsafe void LimeDevice_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
+        private unsafe void LimeSDRDevice_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
         {
-            _callback(this, e.Buffer, e.Length);
+            _callbackSamplesAvailable(this, e.Buffer, e.Length);
         }
 
         public void Close()
         {
-            try
-            {
-                if (_LimeDev == null)
-                    return;
-            }
-            catch(Exception ex)
-            {
-                Debug.Write(ex.ToString());
-            }
-        }
-
-        private void LimeSDRDevice_SampleRateChanged(object sender, EventArgs e)
-        {
-            EventHandler eventHandler = this.SampleRateChanged;
-
-            if (eventHandler == null)
+        
+            if (_limeSDRDevice == null)
                 return;
-
-            eventHandler((object)this, e);
+           
+            _limeSDRDevice.SamplesAvailable -= LimeSDRDevice_SamplesAvailable;
+            //_limeSDRDevice.SampleRateChanged -= LimeSDRDevice_SampleRateChanged;
+            _limeSDRDevice.Dispose();
+            _limeSDRDevice = null;
         }
+
+        //private void LimeSDRDevice_SampleRateChanged(object sender, EventArgs e)
+        //{
+        //    EventHandler eventHandler = this.SampleRateChanged;
+
+        //    if (eventHandler == null)
+        //        return;
+
+        //    eventHandler((object)this, e);
+        //}
 
         public void Open()
         {
             try
             {
-                _LimeDev = new LimeSDRDevice(this);
-                _LimeDev.SamplesAvailable += LimeDevice_SamplesAvailable;
-                _LimeDev.SampleRateChanged += new EventHandler(this.LimeSDRDevice_SampleRateChanged);
-                _LimeDev.SampleRate = _sampleRate;
+                _limeSDRDevice = new LimeSDRDevice(this);
+                _limeSDRDevice.SamplesAvailable += LimeSDRDevice_SamplesAvailable;
+                //_limeSDRDevice.SampleRateChanged += new EventHandler(this.LimeSDRDevice_SampleRateChanged);
+                _limeSDRDevice.SampleRate = _sampleRate;
             }
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+                throw ex;
             }
         }
 
@@ -308,28 +307,31 @@ namespace SDRSharp.LimeSDR
                 _gui.grpChannel.Enabled = false;
                 _gui.samplerateComboBox.Enabled = false;
 
-                if (this._LimeDev == null)
+                if (_limeSDRDevice == null)
                 {
-                    _LimeDev = new LimeSDRDevice(this);
-                    _LimeDev.SamplesAvailable += LimeDevice_SamplesAvailable;
-                    _LimeDev.SampleRateChanged += LimeSDRDevice_SampleRateChanged;
-                    _LimeDev.SampleRate = _sampleRate;
+                    _limeSDRDevice = new LimeSDRDevice(this);
+                    _limeSDRDevice.SamplesAvailable += LimeSDRDevice_SamplesAvailable;
+                    //_limeSDRDevice.SampleRateChanged += LimeSDRDevice_SampleRateChanged;
+                   //limeSDRDevice.SampleRate = _sampleRate;
                 }
 
-                _callback = callback;
 
-                if (!_LimeDev.Open(RadioName))
+                if (!_limeSDRDevice.Open(RadioName))
                 {
-                    _LimeDev.Close();
-                    _LimeDev.Open(RadioName);
+                    _limeSDRDevice.Close();
+                    _limeSDRDevice.Open(RadioName);
                 }
+                _callbackSamplesAvailable = callback;
 
-                _LimeDev.LPBW = _gui.LPBW;
-                _LimeDev.SampleRate = _sampleRate;
-                _LimeDev.Start(_channel, _lpbw, _gain, _ant, _sampleRate, _specOffset);
-                _LimeDev.LPBW = _gui.LPBW;
-
-                _isStreaming = true;
+                _limeSDRDevice.LPBW = _gui.LPBW;
+                //imeSDRDevice.SampleRate = _sampleRate; to be set in .Start
+                _limeSDRDevice.Start(_channel, _lpbw, _gain, _ant, _sampleRate, _specOffset);
+                _limeSDRDevice.LPBW = _gui.LPBW;
+                _limeSDRDevice.LNAgain = _gui.LNAGain;
+                _limeSDRDevice.PGAgain = _gui.PGAGain;
+                _limeSDRDevice.TIAgain = _gui.TIAGain;
+                
+                //_isStreaming = true;
                 _gui.RefreshFormAllGains();
                 _gui.GetLimeSDRDeviceInfo();
             }
@@ -338,7 +340,8 @@ namespace SDRSharp.LimeSDR
                 _gui.grpChannel.Enabled = true;
                 _gui.samplerateComboBox.Enabled = true;
                 Debug.Write(ex.ToString());
-                MessageBox.Show(ex.ToString());
+                // MessageBox.Show(ex.ToString());
+                throw ex;
             }
         }
 
@@ -349,26 +352,29 @@ namespace SDRSharp.LimeSDR
                 _gui.grpChannel.Enabled = false;
                 _gui.samplerateComboBox.Enabled = false;
 
-                if (this._LimeDev == null)
+                if (this._limeSDRDevice == null)
                 {
-                    _LimeDev = new LimeSDRDevice(this);
-                    _LimeDev.SamplesAvailable += LimeDevice_SamplesAvailable;
-                    _LimeDev.SampleRateChanged += LimeSDRDevice_SampleRateChanged;
-                    _LimeDev.SampleRate = _sampleRate;
+                    _limeSDRDevice = new LimeSDRDevice(this);
+                    _limeSDRDevice.SamplesAvailable += LimeSDRDevice_SamplesAvailable;
+                    //_limeSDRDevice.SampleRateChanged += LimeSDRDevice_SampleRateChanged;
+                    //_limeSDRDevice.SampleRate = _sampleRate;
                 }
 
-                if (!_LimeDev.Open(RadioName))
+                if (!_limeSDRDevice.Open(RadioName))
                 {
-                    _LimeDev.Close();
-                    _LimeDev.Open(RadioName);
+                    _limeSDRDevice.Close();
+                    _limeSDRDevice.Open(RadioName);
                 }
 
-                _LimeDev.LPBW = _gui.LPBW;
-                _LimeDev.SampleRate = _sampleRate;
-                _LimeDev.Start(_channel, _lpbw, _gain, _ant, _sampleRate, _specOffset);
-                _LimeDev.LPBW = _gui.LPBW;
+                _limeSDRDevice.LPBW = _gui.LPBW;
+                //_limeSDRDevice.SampleRate = _sampleRate;
+                _limeSDRDevice.Start(_channel, _lpbw, _gain, _ant, _sampleRate, _specOffset);
+                _limeSDRDevice.LPBW = _gui.LPBW;
+                _limeSDRDevice.LNAgain = _gui.LNAGain;
+                _limeSDRDevice.PGAgain = _gui.PGAGain;
+                _limeSDRDevice.TIAgain = _gui.TIAGain;
 
-                _isStreaming = true;
+                //_isStreaming = true;
                 _gui.RefreshFormAllGains();
                 _gui.GetLimeSDRDeviceInfo();
             }
@@ -384,15 +390,16 @@ namespace SDRSharp.LimeSDR
         {
             try
             {
-                _isStreaming = false;
+                //_isStreaming = false;
                 _gui.grpChannel.Enabled = true;
                 _gui.samplerateComboBox.Enabled = true;
+                _gui.toolStripStatusLabel_RxRate.Text = "";
 
-                if (_LimeDev != null)
+                if (_limeSDRDevice != null)
                 {
                     try
                     {
-                        _LimeDev.Stop();
+                        _limeSDRDevice.Stop();
                     }
                     catch
                     {
@@ -445,17 +452,17 @@ namespace SDRSharp.LimeSDR
         {
             get
             {
-                if (this._LimeDev != null)
+                if (this._limeSDRDevice != null)
                 {
-                    _frequency = this._LimeDev.Frequency;
+                    _frequency = this._limeSDRDevice.Frequency;
                 }
                 return (long)_frequency;
             }
             set
             {
-                if (this._LimeDev != null)
+                if (this._limeSDRDevice != null)
                 {
-                    this._LimeDev.Frequency = (long)value;
+                    this._limeSDRDevice.Frequency = (long)value;
                     this._frequency = (long)value;
                 }
 
@@ -467,10 +474,11 @@ namespace SDRSharp.LimeSDR
         {
             get
             {
-                if (_LimeDev != null)
-                    return _LimeDev.SampleRate;
-                else
-                    return 0.0;
+                if (_limeSDRDevice != null)
+                {
+                    return _limeSDRDevice.SampleRate;
+                }
+                return 10000000.0;
             }
         }
 

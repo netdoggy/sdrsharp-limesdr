@@ -126,6 +126,7 @@
     <Compile Include="LimeSDRDevice.cs" />
     <Compile Include="LimeSDRIO.cs" />
     <Compile Include="NativeMethods.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="WMLSS">

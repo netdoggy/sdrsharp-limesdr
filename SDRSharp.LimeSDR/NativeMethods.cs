@@ -163,6 +163,10 @@ namespace SDRSharp.LimeSDR
         [DllImport(APIDLL, EntryPoint = "LMS_Init", CallingConvention = CallingConvention.Cdecl)]
         public static extern int LMS_Init(IntPtr device);
 
+        [DllImport(APIDLL, EntryPoint = "LMS_Reset", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int LMS_Reset(IntPtr device);
+
+
         [DllImport(APIDLL, EntryPoint = "LMS_EnableChannel", CallingConvention = CallingConvention.Cdecl)]
         public static extern int LMS_EnableChannel(IntPtr device, bool dir_tx, uint chan, bool enabled);
 

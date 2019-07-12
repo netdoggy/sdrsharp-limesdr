@@ -26,8 +26,8 @@ namespace SDRSharp.LimeSDR
         private const long DefaultFrequency = 101700000;
         private const uint SampleTimeoutMs = 1000;
 
-        public IntPtr _device = IntPtr.Zero;
-        IntPtr _stream = IntPtr.Zero;
+        public IntPtr _lms_device = IntPtr.Zero;
+        public IntPtr _lms_Stream = IntPtr.Zero;
         private bool _isStreaming;
         private Thread _sampleThread = null;
         private uint _channel = 0;  // rx0
@@ -58,11 +58,11 @@ namespace SDRSharp.LimeSDR
         private double _lpbw = 1.5 * 1e6;
         public float SpectrumOffset = 100.0f;
         private double _freqDiff = 0.0;
-    
-        LMS7Parameter PGA_gain = new LMS7Parameter();
-        LMS7Parameter TIA_gain = new LMS7Parameter();
-        LMS7Parameter LNA_gain = new LMS7Parameter();
-        LMS7Parameter G_RXLOOPB_RFE = new LMS7Parameter();
+
+        LMS7Parameter LMS7_PGA_gain = new LMS7Parameter();
+        LMS7Parameter LMS7_TIA_gain = new LMS7Parameter();
+        LMS7Parameter LMS7_LNA_gain = new LMS7Parameter();
+        //LMS7Parameter LMS7_G_RXLOOPB_RFE = new LMS7Parameter();
 
         #endregion
 
@@ -78,11 +78,11 @@ namespace SDRSharp.LimeSDR
 
         public double FreqDiff
         {
-           set
+            set
             {
                 _freqDiff = value;
 
-                if (_isStreaming)
+                if (IsStreaming)
                     Frequency = (long)_centerFrequency;   // force reload
             }
         }
@@ -112,7 +112,7 @@ namespace SDRSharp.LimeSDR
 
                 if (_isStreaming)
                 {
-                    if (NativeMethods.LMS_WriteParam(_device, LNA_gain, _lnaGain) != 0)
+                    if (NativeMethods.LMS_WriteParam(_lms_device, LMS7_LNA_gain, _lnaGain) != 0)
                     {
                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                     }
@@ -124,11 +124,11 @@ namespace SDRSharp.LimeSDR
 
                 if (_isStreaming)
                 {
-                    if (NativeMethods.LMS_ReadParam(_device, LNA_gain, ref _lnaGain) != 0)
+                    if (NativeMethods.LMS_ReadParam(_lms_device, LMS7_LNA_gain, ref _lnaGain) != 0)
                     {
                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                     }
-                    
+
                 }
                 return _lnaGain;
             }
@@ -142,7 +142,7 @@ namespace SDRSharp.LimeSDR
 
                 if (_isStreaming)
                 {
-                    if (NativeMethods.LMS_WriteParam(_device, TIA_gain, _tiaGain) != 0)
+                    if (NativeMethods.LMS_WriteParam(_lms_device, LMS7_TIA_gain, _tiaGain) != 0)
                     {
                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                     }
@@ -153,7 +153,7 @@ namespace SDRSharp.LimeSDR
             {
                 if (_isStreaming)
                 {
-                    if (NativeMethods.LMS_ReadParam(_device, TIA_gain, ref _tiaGain) != 0)
+                    if (NativeMethods.LMS_ReadParam(_lms_device, LMS7_TIA_gain, ref _tiaGain) != 0)
                     {
                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                     }
@@ -170,7 +170,7 @@ namespace SDRSharp.LimeSDR
 
                 if (_isStreaming)
                 {
-                    if (NativeMethods.LMS_WriteParam(_device, PGA_gain, _pgaGain) != 0)
+                    if (NativeMethods.LMS_WriteParam(_lms_device, LMS7_PGA_gain, _pgaGain) != 0)
                     {
                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                     }
@@ -181,7 +181,7 @@ namespace SDRSharp.LimeSDR
             {
                 if (_isStreaming)
                 {
-                    if (NativeMethods.LMS_ReadParam(_device, PGA_gain, ref _pgaGain) != 0)
+                    if (NativeMethods.LMS_ReadParam(_lms_device, LMS7_PGA_gain, ref _pgaGain) != 0)
                     {
                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                     }
@@ -190,11 +190,11 @@ namespace SDRSharp.LimeSDR
             }
         }
 
-        public double Temp()
+        public double Temperature()
         {
             double temp = 0;
 
-            if (_isStreaming && NativeMethods.LMS_GetChipTemperature(_device, 0, ref temp) != 0)
+            if (_isStreaming && NativeMethods.LMS_GetChipTemperature(_lms_device, 0, ref temp) != 0)
             {
                 throw new ApplicationException(NativeMethods.limesdr_strerror());
             }
@@ -229,10 +229,11 @@ namespace SDRSharp.LimeSDR
                     Thread.Sleep(100);
                 }
 
-                var samplesReceived = NativeMethods.LMS_RecvStream(_stream, _samplesPtr, _readLength, ref meta, SampleTimeoutMs);
+                var samplesReceived = NativeMethods.LMS_RecvStream(_lms_Stream, _samplesPtr, _readLength, ref meta, SampleTimeoutMs);
                 if (samplesReceived < 0)
                 {
                     MessageBox.Show("LimeSDRDevice::ReceiveSamples_sync read error");
+                    //throw ApplicationException("LimeSDRDevice::ReceiveSamples_sync read error");
                     break;
                 }
                 var ptrIq = _iqPtr;
@@ -247,7 +248,8 @@ namespace SDRSharp.LimeSDR
                 ComplexSamplesAvailable(_iqPtr, _iqBuffer.Length);
             }
 
-            NativeMethods.LMS_StopStream(_stream);
+            NativeMethods.LMS_StopStream(_lms_Stream);
+
             Close();
         }
 
@@ -260,33 +262,33 @@ namespace SDRSharp.LimeSDR
             // G_PGA_RBB_(1, 2)[4:0]: This is the gain of the PGA. The gain is adaptively set to
             // maintain signal swing of 0.6Vpkd at the output of the PGA. The value of the gain is:
             // Gain(dB) = -12+G_PGA_RBB. Default
-            PGA_gain.address = 0x0119;
-            PGA_gain.msb = 4;
-            PGA_gain.lsb = 0;
-            PGA_gain.defaultValue = 11;
-            PGA_gain.name = "G_PGA_RBB";
-            PGA_gain.tooltip = "This is the gain of the PGA";
+            LMS7_PGA_gain.address = 0x0119;
+            LMS7_PGA_gain.msb = 4;
+            LMS7_PGA_gain.lsb = 0;
+            LMS7_PGA_gain.defaultValue = 11;
+            LMS7_PGA_gain.name = "G_PGA_RBB";
+            LMS7_PGA_gain.tooltip = "This is the gain of the PGA";
 
-            TIA_gain.address = 0x0113;
-            TIA_gain.msb = 1;
-            TIA_gain.lsb = 0;
-            TIA_gain.defaultValue = 3;
-            TIA_gain.name = "G_TIA_RFE";
-            TIA_gain.tooltip = "Controls the Gain of the TIA";
+            LMS7_TIA_gain.address = 0x0113;
+            LMS7_TIA_gain.msb = 1;
+            LMS7_TIA_gain.lsb = 0;
+            LMS7_TIA_gain.defaultValue = 3;
+            LMS7_TIA_gain.name = "G_TIA_RFE";
+            LMS7_TIA_gain.tooltip = "Controls the Gain of the TIA";
 
-            G_RXLOOPB_RFE.address = 0x0113;
-            G_RXLOOPB_RFE.msb = 5;
-            G_RXLOOPB_RFE.lsb = 2;
-            G_RXLOOPB_RFE.defaultValue = 0;
-            G_RXLOOPB_RFE.name = "G_RXLOOPB_RFE";
-            G_RXLOOPB_RFE.tooltip = "Controls RXFE loopback gain (Should be '0' when actual LNAs are working)";
+            //LMS7_G_RXLOOPB_RFE.address = 0x0113;
+            //LMS7_G_RXLOOPB_RFE.msb = 5;
+            //LMS7_G_RXLOOPB_RFE.lsb = 2;
+            //LMS7_G_RXLOOPB_RFE.defaultValue = 0;
+            //LMS7_G_RXLOOPB_RFE.name = "G_RXLOOPB_RFE";
+            //LMS7_G_RXLOOPB_RFE.tooltip = "Controls RXFE loopback gain (Should be '0' when actual LNAs are working)";
 
-            LNA_gain.address = 0x0113;
-            LNA_gain.msb = 9;
-            LNA_gain.lsb = 6;
-            LNA_gain.defaultValue = 15;
-            LNA_gain.name = "G_LNA_RFE";
-            LNA_gain.tooltip = "Controls the gain of the LNA";
+            LMS7_LNA_gain.address = 0x0113;
+            LMS7_LNA_gain.msb = 9;
+            LMS7_LNA_gain.lsb = 6;
+            LMS7_LNA_gain.defaultValue = 15;
+            LMS7_LNA_gain.name = "G_LNA_RFE";
+            LMS7_LNA_gain.tooltip = "Controls the gain of the LNA";
         }
 
         ~LimeSDRDevice()
@@ -311,13 +313,18 @@ namespace SDRSharp.LimeSDR
                 return;
 
             _isStreaming = false;
+            _sampleThread.Join();
+            _sampleThread = null;
         }
 
         public void Dispose()
         {
             Stop();
+            if (_lms_device != IntPtr.Zero)
+                NativeMethods.LMS_Close(_lms_device);
+
             GC.SuppressFinalize(this);
-            _device = IntPtr.Zero;
+            _lms_device = IntPtr.Zero;
         }
 
         public unsafe bool Open(string name)
@@ -327,9 +334,10 @@ namespace SDRSharp.LimeSDR
                 throw new Exception("Cannot found LimeSDR device. Is the device locked somewhere?");
             }
 
-            if (NativeMethods.LMS_Open(out _device, name, null) != 0)
+            if (NativeMethods.LMS_Open(out _lms_device, name, null) != 0)
             {
-                throw new ApplicationException("Cannot open LimeSDR device. Is the device locked somewhere?");
+                var str = NativeMethods.limesdr_strerror();
+                throw new ApplicationException(str.Length > 1 ? str : "Cannot open LimeSDR device. Is the device locked somewhere?");
             }
 
             return true;
@@ -337,16 +345,57 @@ namespace SDRSharp.LimeSDR
 
         public unsafe void Close()
         {
-            if (NativeMethods.LMS_Close(_device) != 0)
+            if (NativeMethods.LMS_Close(_lms_device) != 0)
             {
                 throw new ApplicationException("Cannot open LimeSDR device. Is the device locked somewhere?");
             }
 
-            _device = IntPtr.Zero;
+            _lms_device = IntPtr.Zero;
+        }
+
+        private unsafe void _SetDeviceSampleRate(double sampleRate)
+        {
+            uint oversample = 32;
+
+            if (sampleRate > 32e6)
+            {
+                oversample = 0;
+            }
+            else if (sampleRate > 16e6)
+            {
+                oversample = 4;
+            }
+            else if (sampleRate > 8e6)
+            {
+                oversample = 8;
+            }
+            else if (sampleRate > 4e6)
+            {
+                oversample = 16;
+            }
+            else if (sampleRate > 2e6)
+            {
+                oversample = 32;
+            }
+            else
+            {
+                oversample = 32;
+            }
+
+
+            // Set sampling rate for all RX or TX channels.Sample rate is in complex samples(1 sample = I + Q).The function sets sampling rate that is used for data exchange with the host.It also allows to specify higher sampling rate to be used in RF by setting oversampling ratio.Valid oversampling values are 1, 2, 4, 8, 16, 32 or 0(use device default oversampling value).
+            if (NativeMethods.LMS_SetSampleRateDir(_lms_device, LMS_CH_RX, sampleRate, oversample) != 0)
+            {
+                throw new ApplicationException(NativeMethods.limesdr_strerror());
+            }
         }
 
         public unsafe void Start(uint ch, double lpbw, double gain, uint ant, double sr, float specOffset)
         {
+            if (_isStreaming)
+            {
+                throw new ApplicationException("Start() Already running");
+            }
             _ant = ant;
             _channel = ch;
             _lpbw = lpbw;
@@ -354,65 +403,24 @@ namespace SDRSharp.LimeSDR
             _sampleRate = sr;
             SpectrumOffset = specOffset;
 
-            NativeMethods.LMS_Init(_device);
+            NativeMethods.LMS_Init(_lms_device);
 
-            if (NativeMethods.LMS_EnableChannel(_device, LMS_CH_RX, _channel, true) != 0)
+            if (NativeMethods.LMS_EnableChannel(_lms_device, LMS_CH_RX, _channel, true) != 0)
             {
                 throw new ApplicationException(NativeMethods.limesdr_strerror());
             }
 
-            if (NativeMethods.LMS_SetAntenna(_device, LMS_CH_RX, _channel, _ant) != 0)
+            if (NativeMethods.LMS_SetAntenna(_lms_device, LMS_CH_RX, _channel, _ant) != 0)
             {
                 throw new ApplicationException(NativeMethods.limesdr_strerror());
             }
 
+            if (NativeMethods.LMS_SetGaindB(_lms_device, LMS_CH_RX, _channel, _gain) != 0)
+            {
+                throw new ApplicationException(NativeMethods.limesdr_strerror());
+            }
             this.SampleRate = _sampleRate;
 
-            uint oversample = 32;
-            if (SampleRate < 384000)
-            {
-                oversample = 32;              
-            }
-            else
-            {
-                if (SampleRate > 32000000)
-                {
-                    oversample = 0;
-                }
-                else if (SampleRate > 16000000)
-                {
-                    oversample = 4;
- 
-                }
-                else if (SampleRate > 8000000)
-                {
-                    oversample = 8;
-    
-                }
-                else if (SampleRate > 4000000)
-                {
-                    oversample = 16;
-
-                }
-                else if (SampleRate > 2000000)
-                {
-                    oversample = 32;               
-                }
-                else
-                {
-                    oversample = 32;   
-                }
-            }
-
-            if (NativeMethods.LMS_SetSampleRateDir(_device, LMS_CH_RX, SampleRate, oversample) != 0)
-            {
-                throw new ApplicationException(NativeMethods.limesdr_strerror());
-            }
-
-            if (NativeMethods.LMS_SetGaindB(_device, LMS_CH_RX, _channel, _gain) != 0)
-            {
-                throw new ApplicationException(NativeMethods.limesdr_strerror());
-            }
 
             LPBW = _lpbw;
 
@@ -423,16 +431,16 @@ namespace SDRSharp.LimeSDR
             streamId.throughputVsLatency = 0.5f;        //balance
             streamId.isTx = false;                      //RX channel
             streamId.dataFmt = dataFmt.LMS_FMT_F32;
-            _stream = Marshal.AllocHGlobal(Marshal.SizeOf(streamId));
+            _lms_Stream = Marshal.AllocHGlobal(Marshal.SizeOf(streamId));
 
-            Marshal.StructureToPtr(streamId, _stream, false);
+            Marshal.StructureToPtr(streamId, _lms_Stream, false);
 
-            if (NativeMethods.LMS_SetupStream(_device, _stream) != 0)
+            if (NativeMethods.LMS_SetupStream(_lms_device, _lms_Stream) != 0)
             {
                 throw new ApplicationException(NativeMethods.limesdr_strerror());
             }
 
-            if (NativeMethods.LMS_StartStream(_stream) != 0)
+            if (NativeMethods.LMS_StartStream(_lms_Stream) != 0)
             {
                 throw new ApplicationException(NativeMethods.limesdr_strerror());
             }
@@ -451,9 +459,9 @@ namespace SDRSharp.LimeSDR
 
             get
             {
-                if (_device != IntPtr.Zero)
+                if (_lms_device != IntPtr.Zero)
                 {
-                    if (NativeMethods.LMS_GetLOFrequency(_device, LMS_CH_RX, _channel, ref _centerFrequency) != 0)
+                    if (NativeMethods.LMS_GetLOFrequency(_lms_device, LMS_CH_RX, _channel, ref _centerFrequency) != 0)
                     {
                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                     }
@@ -471,41 +479,48 @@ namespace SDRSharp.LimeSDR
                         if (_centerFrequency < 30 * 1e6 && _old_centerFrequency >= 30 * 1e6)
                         {
                             _old_centerFrequency = _centerFrequency;
-                            _isStreaming = false;
-                            Thread.Sleep(1000);
+                            Stop();
+                            //_isStreaming = false;
+                            //_sampleThread.Join();
+                            //_sampleThread = null;
+                            //Thread.Sleep(50); 
                             _parrent.ReStart();
                         }
                         else if (_centerFrequency > 30 * 1e6 && _old_centerFrequency <= 30 * 1e6)
                         {
                             _old_centerFrequency = _centerFrequency;
-                            _isStreaming = false;
-                            Thread.Sleep(1000);
+                            Stop();
+                            //_isStreaming = false;
+                            //_sampleThread.Join(); // Thread.Sleep(50);
+                            //_sampleThread = null;
                             _parrent.ReStart();
                         }
                         else
                         {
                             _old_centerFrequency = _centerFrequency;
 
-                            if (_device != IntPtr.Zero)
+                            if (_lms_device != IntPtr.Zero)
                             {
                                 if (value >= 30 * 1e6)
                                 {
-                                    if (NativeMethods.LMS_SetNCOIndex(_device, LMS_CH_RX, _channel, 15, true) != 0)   // 0.0 NCO
+                                    if (NativeMethods.LMS_SetNCOIndex(_lms_device, LMS_CH_RX, _channel, 15, true) != 0)   // 0.0 NCO
                                     {
-                                        _isStreaming = false;
+                                        //_isStreaming = false;
+                                        Stop();
                                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                                     }
 
-                                    if (NativeMethods.LMS_SetLOFrequency(_device, LMS_CH_RX, _channel, _centerFrequency + _freqDiff) != 0)
+                                    if (NativeMethods.LMS_SetLOFrequency(_lms_device, LMS_CH_RX, _channel, _centerFrequency + _freqDiff) != 0)
                                     {
                                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                                     }
                                 }
                                 else
                                 {
-                                    if (NativeMethods.LMS_SetLOFrequency(_device, LMS_CH_RX, _channel, 30.0 * 1e6) != 0)
+                                    if (NativeMethods.LMS_SetLOFrequency(_lms_device, LMS_CH_RX, _channel, 30.0 * 1e6) != 0)
                                     {
-                                        _isStreaming = false;
+                                        //_isStreaming = false;
+                                        Stop();
                                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                                     }
 
@@ -518,15 +533,15 @@ namespace SDRSharp.LimeSDR
                                         losc_freq[0] = (30.0 * 1e6) - _centerFrequency;
                                         losc_freq[15] = 0.0;
 
-                                        if (NativeMethods.LMS_SetNCOFrequency(_device, LMS_CH_RX, _channel, freq, 0.0) != 0)
+                                        if (NativeMethods.LMS_SetNCOFrequency(_lms_device, LMS_CH_RX, _channel, freq, 0.0) != 0)
                                         {
-                                            _isStreaming = false;
+                                            Stop();
                                             throw new ApplicationException(NativeMethods.limesdr_strerror());
                                         }
 
-                                        if (NativeMethods.LMS_SetNCOIndex(_device, LMS_CH_RX, _channel, 0, false) != 0)
+                                        if (NativeMethods.LMS_SetNCOIndex(_lms_device, LMS_CH_RX, _channel, 0, false) != 0)
                                         {
-                                            _isStreaming = false;
+                                            Stop();
                                             throw new ApplicationException(NativeMethods.limesdr_strerror());
                                         }
                                     }
@@ -539,9 +554,9 @@ namespace SDRSharp.LimeSDR
                         _old_centerFrequency = _centerFrequency;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    throw ex;
                 }
 
             }
@@ -552,8 +567,11 @@ namespace SDRSharp.LimeSDR
 
         public void OnSampleRateChanged()
         {
-            if (SampleRateChanged != null)
-                SampleRateChanged(this, EventArgs.Empty);
+            EventHandler sampleRateChanged = this.SampleRateChanged;
+            if (sampleRateChanged != null)
+            {
+                sampleRateChanged(this, EventArgs.Empty);
+            }
         }
 
         public uint Channel
@@ -564,7 +582,7 @@ namespace SDRSharp.LimeSDR
             }
             set
             {
-               _channel = value;
+                _channel = value;
             }
         }
 
@@ -580,9 +598,9 @@ namespace SDRSharp.LimeSDR
 
                 if (_isStreaming)
                 {
-                    if (_device != IntPtr.Zero || _device != null)
+                    if (_lms_device != IntPtr.Zero || _lms_device != null)
                     {
-                        if (NativeMethods.LMS_SetAntenna(_device, LMS_CH_RX, _channel, _ant) != 0)
+                        if (NativeMethods.LMS_SetAntenna(_lms_device, LMS_CH_RX, _channel, _ant) != 0)
                         {
                             throw new ApplicationException(NativeMethods.limesdr_strerror());
                         }
@@ -601,7 +619,17 @@ namespace SDRSharp.LimeSDR
             set
             {
                 _sampleRate = value;
-                OnSampleRateChanged();
+
+                if (_lms_device != IntPtr.Zero)
+                {
+                    _SetDeviceSampleRate(_sampleRate);
+                }
+
+                if (_isStreaming)
+                {
+                    Thread.Sleep(1000);
+                    OnSampleRateChanged();
+                }
             }
         }
 
@@ -612,9 +640,9 @@ namespace SDRSharp.LimeSDR
 
                 if (_isStreaming)
                 {
-                    if (_device != IntPtr.Zero)
+                    if (_lms_device != IntPtr.Zero)
                     {
-                        if (NativeMethods.LMS_GetGaindB(_device, LMS_CH_RX, _channel, ref _gain) != 0)
+                        if (NativeMethods.LMS_GetGaindB(_lms_device, LMS_CH_RX, _channel, ref _gain) != 0)
                         {
                             throw new ApplicationException(NativeMethods.limesdr_strerror());
                         }
@@ -631,9 +659,9 @@ namespace SDRSharp.LimeSDR
 
                 if (_isStreaming)
                 {
-                    if (_device != IntPtr.Zero)
+                    if (_lms_device != IntPtr.Zero)
                     {
-                        if (NativeMethods.LMS_SetGaindB(_device, LMS_CH_RX, _channel, _gain) != 0)
+                        if (NativeMethods.LMS_SetGaindB(_lms_device, LMS_CH_RX, _channel, _gain) != 0)
                         {
                             throw new ApplicationException(NativeMethods.limesdr_strerror());
                         }
@@ -656,7 +684,7 @@ namespace SDRSharp.LimeSDR
 
                 if (_isStreaming)
                 {
-                    if (NativeMethods.LMS_SetLPFBW(_device, LMS_CH_RX, _channel, _lpbw) != 0)
+                    if (NativeMethods.LMS_SetLPFBW(_lms_device, LMS_CH_RX, _channel, _lpbw) != 0)
                     {
                         throw new ApplicationException(NativeMethods.limesdr_strerror());
                     }

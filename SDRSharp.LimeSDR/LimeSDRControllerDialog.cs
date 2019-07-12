@@ -17,6 +17,7 @@ using System.Windows.Forms;
 using SDRSharp.Radio;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace SDRSharp.LimeSDR
 {
@@ -27,12 +28,15 @@ namespace SDRSharp.LimeSDR
         public double _sampleRate = 1.5 * 1e6;
         public double _freqDiff = 0.0;
         private Dictionary<int, string> _sampleRates = new Dictionary<int, string>();
-       
+
         public LimeSDRControllerDialog(LimeSDRIO owner)
         {
             try
             {
                 InitializeComponent();
+                string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+                toolStripStatusLabel_Version.Text = "v" + assemblyVersion.ToString().Replace(".0", "");
                 float dpi = this.CreateGraphics().DpiX;
                 float ratio = dpi / 96.0f;
                 string font_name = this.Font.Name;
@@ -45,12 +49,21 @@ namespace SDRSharp.LimeSDR
                 InitSampleRates();
                 GetDeviceList();
 
-                _initialized = true;
 
+                _initialized = true;
+                toolStripStatusLabel_RxRate.Text = "";
                 comboRadioModel.Text = Utils.GetStringSetting("LimeSDR model", "");
+
                 tbLimeSDR_Gain.Value = Utils.GetIntSetting("LimeSDR Gain", 40);
+                //tbLimeSDR_LNAGain.Value = Utils.GetIntSetting("LimeSDR LNAGain", tbLimeSDR_LNAGain.Value); // default fron TrackBar defaultValue
+                //tbLimeSDR_TIAGain.Value = Utils.GetIntSetting("LimeSDR TIAGain", tbLimeSDR_TIAGain.Value);
+                //tbLimeSDR_PGAGain.Value = Utils.GetIntSetting("LimeSDR PGAGain", tbLimeSDR_PGAGain.Value);
+                //RefreshLabelLnaGain();
+                //RefreshLabelTiaGain();
+                //RefreshLabelPgaGain();
+
                 gainBar_Scroll(this, EventArgs.Empty); // force resave param to lime device?                 
-                lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value.ToString()+"dB";
+                lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value.ToString() + "dB";
                 samplerateComboBox.SelectedValue = Int32.Parse(Utils.GetStringSetting("LimeSDR SampleRate", "768000"));
                 LPBWcomboBox.Text = Utils.GetStringSetting("LimeSDR LPBW", "1.5MHz");
                 rx0.Checked = Utils.GetBooleanSetting("LimeSDR RX0");
@@ -62,16 +75,17 @@ namespace SDRSharp.LimeSDR
                 udSpecOffset_ValueChanged(this, EventArgs.Empty); // force resave param  SpecOffset to Onwer (device) obj
                 udFrequencyDiff.Value = (decimal)Utils.GetDoubleSetting("LimeSDR Frequency diff.", 0.0);
                 RefreshLimeSdrTemp();
-                toolTip_Gain.SetToolTip(lblLimeSDR_GainDB, "");
-                toolTip_Gain.SetToolTip(tbLimeSDR_Gain, "");
-                toolTip_Gain.SetToolTip(tbLimeSDR_LNAGain, "");
-                toolTip_Gain.SetToolTip(tbLimeSDR_PGAGain, "");
-                toolTip_Gain.SetToolTip(tbLimeSDR_TIAGain, "");
-
+                //toolTip_Gain.SetToolTip(lblLimeSDR_GainDB, "");
+                //toolTip_Gain.SetToolTip(tbLimeSDR_Gain, "");
+                //toolTip_Gain.SetToolTip(tbLimeSDR_LNAGain, "");
+                //toolTip_Gain.SetToolTip(tbLimeSDR_PGAGain, "");
+                //toolTip_Gain.SetToolTip(tbLimeSDR_TIAGain, "");
+                GetLimeSuiteLibVersion();
             }
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+                throw ex;
             }
         }
 
@@ -105,12 +119,13 @@ namespace SDRSharp.LimeSDR
                 55296000
             };
 
-            foreach (var sr in sampleRates) {
+            foreach (var sr in sampleRates)
+            {
                 var displayValue = Math.Round(sr / 1e6f, 4);
-                _sampleRates.Add(sr, displayValue.ToString() + "M");
+                _sampleRates.Add(sr, displayValue.ToString() + " MSPS");
             }
 
-            
+
             samplerateComboBox.DataSource = new BindingSource(_sampleRates, null);
             samplerateComboBox.DisplayMember = "Value";
             samplerateComboBox.ValueMember = "Key";
@@ -128,6 +143,31 @@ namespace SDRSharp.LimeSDR
                     NumberFormat = { NumberDecimalSeparator = "." }
                 };
                 return (double)(UInt32)(double.Parse(LPBWcomboBox.Text.Replace("MHz", ""), commaCulture) * 1e6);
+            }
+        }
+
+        public ushort TIAGain
+        {
+            get
+            {
+                return (ushort)tbLimeSDR_TIAGain.Value;
+            }
+        }
+
+        public ushort PGAGain
+        {
+            get
+            {
+                return (ushort)tbLimeSDR_PGAGain.Value;
+            }
+        }
+
+
+        public ushort LNAGain
+        {
+            get
+            {
+                return (ushort)tbLimeSDR_LNAGain.Value;
             }
         }
 
@@ -150,7 +190,7 @@ namespace SDRSharp.LimeSDR
                 if (_owner.Device != null)
                     _owner.Device.SampleRate = _sampleRate;
             }
-            catch  (Exception ex)
+            catch (Exception ex)
             {
                 _sampleRate = 1.5 * 1e6;
             }
@@ -175,37 +215,92 @@ namespace SDRSharp.LimeSDR
                 return;
             }
 
-           
+
             _owner.Gain = tbLimeSDR_Gain.Value; // write to device
             lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value + "dB";
             Utils.SaveSetting("LimeSDR Gain", (int)tbLimeSDR_Gain.Value);
 
-            // read from device if open
-            tbLimeSDR_LNAGain.Value = _owner.LNAgain;
-            RefreshLabelLnaGain();
+           // if (_owner.Device.IsStreaming) // if you read when the device is not open then default values will be obtained, which is not correct
+            {
+                // read from device if open
+                tbLimeSDR_LNAGain.Value = _owner.LNAgain;
+                RefreshLabelLnaGain();
 
-            tbLimeSDR_TIAGain.Value = _owner.TIAgain;
-            RefreshLabelTiaGain();
+                tbLimeSDR_TIAGain.Value = _owner.TIAgain;
+                RefreshLabelTiaGain();
 
-            tbLimeSDR_PGAGain.Value = _owner.PGAgain;
-            RefreshLabelPgaGain();
+                tbLimeSDR_PGAGain.Value = _owner.PGAgain;
+                RefreshLabelPgaGain();
+            }
         }
 
-
-        public void RefreshFormAllGains()
+        private void tbLimeSDR_PGAGain_Scroll(object sender, EventArgs e)
         {
-            if (_owner == null)
-                return;
-            // read data from device 
-            tbLimeSDR_LNAGain.Value = _owner.LNAgain;
-            RefreshLabelLnaGain();
+            try
+            {
+                Utils.SaveSetting("LimeSDR PGAGain", (int)tbLimeSDR_PGAGain.Value);
+                RefreshLabelPgaGain();
 
-            tbLimeSDR_TIAGain.Value = _owner.TIAgain;
-            RefreshLabelTiaGain();
+                if (_owner != null)
+                {
+                    _owner.PGAgain = (ushort)tbLimeSDR_PGAGain.Value;
+                    UpdateAutoGainFromLimeSdr();
 
-            tbLimeSDR_PGAGain.Value = _owner.PGAgain;
-            RefreshLabelPgaGain();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                throw ex;
+            }
         }
+
+
+        private void tbLimeSDR_LNAGain_Scroll(object sender, EventArgs e)
+        {
+
+
+            try
+            {
+                Utils.SaveSetting("LimeSDR LNAGain", (int)tbLimeSDR_LNAGain.Value);
+                RefreshLabelLnaGain();
+                if (_owner != null)
+                {
+                    _owner.LNAgain = (ushort)tbLimeSDR_LNAGain.Value;
+                    UpdateAutoGainFromLimeSdr();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                throw ex;
+            }
+        }
+
+        private void tbLimeSDR_TIAGain_Scroll(object sender, EventArgs e)
+        {
+            try
+            {
+                Utils.SaveSetting("LimeSDR TIAGain", (int)tbLimeSDR_TIAGain.Value);
+                RefreshLabelTiaGain();
+
+                if (_owner != null)
+                {
+                    _owner.TIAgain = (ushort)tbLimeSDR_TIAGain.Value;
+                    UpdateAutoGainFromLimeSdr();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                throw ex;
+            }
+        }
+
+
 
         private void rx0_CheckedChanged(object sender, EventArgs e)
         {
@@ -315,9 +410,11 @@ namespace SDRSharp.LimeSDR
 
         private void btnRadioRefresh_Click(object sender, EventArgs e)
         {
+            RefreshStreamStatus();
             try
             {
-                if (_owner != null && !_owner._isStreaming)
+                //if (_owner != null && !_owner._isStreaming)
+                if (_owner != null && !_owner.Device.IsStreaming)
                 {
                     comboRadioModel.Items.Clear();
                     GetDeviceList();
@@ -333,6 +430,11 @@ namespace SDRSharp.LimeSDR
             }
         }
 
+        unsafe void GetLimeSuiteLibVersion()
+        {
+            IntPtr libVersion = (IntPtr)NativeMethods.LMS_GetLibraryVersion();
+            txtLimeSuiteVersion.Text = Marshal.PtrToStringAnsi(libVersion);
+        }
         unsafe public void GetDeviceList()
         {
             try
@@ -396,49 +498,14 @@ namespace SDRSharp.LimeSDR
             }
         }
 
-        private void tbLimeSDR_LNAGain_Scroll(object sender, EventArgs e)
-        {
 
 
-            try
-            {                
-                RefreshLabelLnaGain();
-                if (_owner != null)
-                {
-                    _owner.LNAgain = (ushort)tbLimeSDR_LNAGain.Value;
-                    RefreshFormGain();
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Debug.Write(ex.ToString());
-            }
-        }
-
-        private void tbLimeSDR_TIAGain_Scroll(object sender, EventArgs e)
-        {
-            try
-            {
-                RefreshLabelTiaGain();
-
-                if (_owner != null)
-                {
-                    _owner.TIAgain = (ushort)tbLimeSDR_TIAGain.Value;
-                    RefreshFormGain();
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Debug.Write(ex.ToString());
-            }
-        }
-
-        private void RefreshFormGain()
+        private void UpdateAutoGainFromLimeSdr()
         {
             tbLimeSDR_Gain.Value = (int)_owner.Gain;
             lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value.ToString() + "dB";
+
+            //Utils.SaveSetting("LimeSDR Gain", (int)tbLimeSDR_Gain.Value);
         }
 
         private void RefreshLabelLnaGain()
@@ -458,39 +525,65 @@ namespace SDRSharp.LimeSDR
             lblLimeSDR_PGAGain.Text = (-12 + tbLimeSDR_PGAGain.Value).ToString() + "dB";
         }
 
-
-        private void tbLimeSDR_PGAGain_Scroll(object sender, EventArgs e)
+        public void RefreshFormAllGains()
         {
-            try
-            {
-                RefreshLabelPgaGain();
+            if (_owner == null)
+                return;
 
-                if (_owner != null)
-                {
-                    _owner.PGAgain = (ushort)tbLimeSDR_PGAGain.Value;
-                    RefreshFormGain();
-                }
+            // read data from device 
+            tbLimeSDR_LNAGain.Value = _owner.LNAgain;
+            RefreshLabelLnaGain();
 
-            }
-            catch (Exception ex)
-            {
-                Debug.Write(ex.ToString());
-            }
+            tbLimeSDR_TIAGain.Value = _owner.TIAgain;
+            RefreshLabelTiaGain();
+
+            tbLimeSDR_PGAGain.Value = _owner.PGAgain;
+            RefreshLabelPgaGain();
         }
 
+
+
+        public lms_stream_status_t lms_stream_status = new lms_stream_status_t();
+        public lms_stream_status_t lms_stream_status_accomulated = new lms_stream_status_t();
+        public void RefreshStreamStatus()
+        {
+            if (_owner == null || _owner.LimeSDR_Device == IntPtr.Zero || _owner.Device._lms_Stream == IntPtr.Zero)
+            {
+                return;
+            }
+
+            if (!_owner.Device.IsStreaming)
+                return;
+
+            NativeMethods.LMS_GetStreamStatus(_owner.Device._lms_Stream, ref lms_stream_status);
+            uint res = 0;
+            //uint.TryParse(this.txtDropPackets.Text, out res);
+            //this.txtDropPackets.Text = (res + lms_stream_status.droppedPackets).ToString();
+            toolStripStatusLabel_RxRate.Text =
+                // lms_stream_status.fifoFilledCount.ToString() 
+                //+ "/" + lms_stream_status.fifoSize.ToString() 
+                //+ " | " + lms_stream_status.underrun.ToString() 
+                //+ "/" + lms_stream_status.overrun.ToString() 
+                //+ " | " + lms_stream_status.droppedPackets.ToString() 
+                "RxRate: " + Math.Round(lms_stream_status.linkRate / 1e6, 2).ToString() + " MB/s";
+
+        }
         public void RefreshLimeSdrTemp()
         {
             if (_owner == null || _owner.Device == null)
                 return;
 
-            var temp = _owner.Device.Temp();
+            var temp = _owner.Device.Temperature();
             //label_Temp.Text = 
-            tb_Temperature.Text = temp == 0 ? "N/A" : Math.Round(temp, 2).ToString() + " C";
+            txtTemperature.Text = temp == 0 ? "N/A" : Math.Round(temp, 2).ToString() + " C";
+            toolStripStatusLabel_Temp.Text = txtTemperature.Text;
         }
         public unsafe void GetLimeSDRDeviceInfo()
         {
             try
             {
+
+
                 if (_owner.LimeSDR_Device != IntPtr.Zero)
                 {
                     lms_dev_info_t info = new lms_dev_info_t();
@@ -529,17 +622,14 @@ namespace SDRSharp.LimeSDR
                     string gatewareVersion = ascii.GetString(buff, 120, 16).Trim('\0');
                     string gatewareTargetBoard = ascii.GetString(buff, 136, 32).Trim('\0');
 
-                    IntPtr libVersion;
-                    libVersion = (IntPtr)NativeMethods.LMS_GetLibraryVersion();
-                    string limeSuiteVersion = Marshal.PtrToStringAnsi(libVersion);
+                    IntPtr libVersion = (IntPtr)NativeMethods.LMS_GetLibraryVersion();
+                    txtLimeSuiteVersion.Text = Marshal.PtrToStringAnsi(libVersion);
 
                     txtRadioModel.Text = deviceName;
                     txtFirm_version.Text = firmwareVersion;
                     txtSerialNumber.Text = boardSerialNumber;
                     txtGatewareVersion.Text = gatewareVersion;
-                    txtLimeSuiteVersion.Text = limeSuiteVersion;
                     RefreshLimeSdrTemp();
-
                 }
             }
             catch (Exception ex)
@@ -561,9 +651,7 @@ namespace SDRSharp.LimeSDR
 
         private void LimeSDRControllerDialog_Load(object sender, EventArgs e)
         {
-            RefreshLimeSdrTemp();
-            //if (_owner.Device != null)
-            // label_Temp.Text = _owner.Device.Temp().ToString();
+
         }
 
         private void toolTip_Gain_Popup(object sender, PopupEventArgs e)
@@ -579,6 +667,7 @@ namespace SDRSharp.LimeSDR
         private void timerTemp_Tick(object sender, EventArgs e)
         {
             RefreshLimeSdrTemp();
+            RefreshStreamStatus();
         }
 
         private void label6_Click(object sender, EventArgs e)
@@ -587,6 +676,11 @@ namespace SDRSharp.LimeSDR
         }
 
         private void lblLimeSDR_PGAGain_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void groupBox4_Enter(object sender, EventArgs e)
         {
 
         }
