@@ -2,6 +2,9 @@
 
 LimeSDR for SDR# Plugin
 
+forked from https://github.com/jocover/sdrsharp-limesdr 
+which is forked from https://github.com/jocover/sdrsharp-limesdr
+
 ## Installation
 
 1. Copy SDRSharp.LimeSDR.DLL file to SDR# installation directory
