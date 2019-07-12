@@ -84,10 +84,10 @@
             this.toolTip_Gain = new System.Windows.Forms.ToolTip(this.components);
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel_RxRate = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripStatusLabel_Temp = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel_Author = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel_Version = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel_Temp = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel_RxRate = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)(this.tbLimeSDR_Gain)).BeginInit();
             this.grpChannel.SuspendLayout();
             this.grpAntenna.SuspendLayout();
@@ -106,7 +106,7 @@
             // 
             this.close.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.close.Location = new System.Drawing.Point(295, 615);
-            this.close.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.close.Margin = new System.Windows.Forms.Padding(4);
             this.close.Name = "close";
             this.close.Size = new System.Drawing.Size(100, 31);
             this.close.TabIndex = 0;
@@ -119,7 +119,7 @@
             this.samplerateComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.samplerateComboBox.FormattingEnabled = true;
             this.samplerateComboBox.Location = new System.Drawing.Point(17, 42);
-            this.samplerateComboBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.samplerateComboBox.Margin = new System.Windows.Forms.Padding(4);
             this.samplerateComboBox.Name = "samplerateComboBox";
             this.samplerateComboBox.Size = new System.Drawing.Size(291, 24);
             this.samplerateComboBox.TabIndex = 1;
@@ -139,7 +139,7 @@
             // 
             this.tbLimeSDR_Gain.AutoSize = false;
             this.tbLimeSDR_Gain.Location = new System.Drawing.Point(9, 96);
-            this.tbLimeSDR_Gain.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbLimeSDR_Gain.Margin = new System.Windows.Forms.Padding(4);
             this.tbLimeSDR_Gain.Maximum = 73;
             this.tbLimeSDR_Gain.Name = "tbLimeSDR_Gain";
             this.tbLimeSDR_Gain.Size = new System.Drawing.Size(307, 22);
@@ -175,7 +175,7 @@
             // 
             this.rx0.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rx0.Location = new System.Drawing.Point(27, 34);
-            this.rx0.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.rx0.Margin = new System.Windows.Forms.Padding(4);
             this.rx0.Name = "rx0";
             this.rx0.Size = new System.Drawing.Size(61, 22);
             this.rx0.TabIndex = 7;
@@ -187,7 +187,7 @@
             // 
             this.rx1.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.rx1.Location = new System.Drawing.Point(27, 70);
-            this.rx1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.rx1.Margin = new System.Windows.Forms.Padding(4);
             this.rx1.Name = "rx1";
             this.rx1.Size = new System.Drawing.Size(61, 22);
             this.rx1.TabIndex = 8;
@@ -199,7 +199,7 @@
             // 
             this.ant_h.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.ant_h.Location = new System.Drawing.Point(16, 27);
-            this.ant_h.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.ant_h.Margin = new System.Windows.Forms.Padding(4);
             this.ant_h.Name = "ant_h";
             this.ant_h.Size = new System.Drawing.Size(84, 22);
             this.ant_h.TabIndex = 10;
@@ -211,7 +211,7 @@
             // 
             this.ant_l.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.ant_l.Location = new System.Drawing.Point(16, 57);
-            this.ant_l.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.ant_l.Margin = new System.Windows.Forms.Padding(4);
             this.ant_l.Name = "ant_l";
             this.ant_l.Size = new System.Drawing.Size(84, 22);
             this.ant_l.TabIndex = 11;
@@ -223,7 +223,7 @@
             // 
             this.ant_w.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.ant_w.Location = new System.Drawing.Point(16, 85);
-            this.ant_w.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.ant_w.Margin = new System.Windows.Forms.Padding(4);
             this.ant_w.Name = "ant_w";
             this.ant_w.Size = new System.Drawing.Size(84, 22);
             this.ant_w.TabIndex = 12;
@@ -236,9 +236,9 @@
             this.grpChannel.Controls.Add(this.rx0);
             this.grpChannel.Controls.Add(this.rx1);
             this.grpChannel.Location = new System.Drawing.Point(17, 327);
-            this.grpChannel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.grpChannel.Margin = new System.Windows.Forms.Padding(4);
             this.grpChannel.Name = "grpChannel";
-            this.grpChannel.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.grpChannel.Padding = new System.Windows.Forms.Padding(4);
             this.grpChannel.Size = new System.Drawing.Size(116, 114);
             this.grpChannel.TabIndex = 13;
             this.grpChannel.TabStop = false;
@@ -250,9 +250,9 @@
             this.grpAntenna.Controls.Add(this.ant_l);
             this.grpAntenna.Controls.Add(this.ant_w);
             this.grpAntenna.Location = new System.Drawing.Point(200, 327);
-            this.grpAntenna.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.grpAntenna.Margin = new System.Windows.Forms.Padding(4);
             this.grpAntenna.Name = "grpAntenna";
-            this.grpAntenna.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.grpAntenna.Padding = new System.Windows.Forms.Padding(4);
             this.grpAntenna.Size = new System.Drawing.Size(116, 114);
             this.grpAntenna.TabIndex = 14;
             this.grpAntenna.TabStop = false;
@@ -283,7 +283,7 @@
             "50MHz",
             "60MHz"});
             this.LPBWcomboBox.Location = new System.Drawing.Point(187, 456);
-            this.LPBWcomboBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.LPBWcomboBox.Margin = new System.Windows.Forms.Padding(4);
             this.LPBWcomboBox.Name = "LPBWcomboBox";
             this.LPBWcomboBox.Size = new System.Drawing.Size(89, 28);
             this.LPBWcomboBox.TabIndex = 16;
@@ -295,7 +295,7 @@
             this.udSpecOffset.DecimalPlaces = 1;
             this.udSpecOffset.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.udSpecOffset.Location = new System.Drawing.Point(203, 494);
-            this.udSpecOffset.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.udSpecOffset.Margin = new System.Windows.Forms.Padding(4);
             this.udSpecOffset.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -344,14 +344,13 @@
             this.groupBox3.Controls.Add(this.label2);
             this.groupBox3.Controls.Add(this.lblLimeSDR_GainDB);
             this.groupBox3.Location = new System.Drawing.Point(343, 15);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox3.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox3.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox3.Size = new System.Drawing.Size(339, 581);
             this.groupBox3.TabIndex = 19;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Settings";
-            this.groupBox3.Enter += new System.EventHandler(this.groupBox3_Enter);
             // 
             // groupBox1
             // 
@@ -391,7 +390,6 @@
             this.label6.Size = new System.Drawing.Size(69, 17);
             this.label6.TabIndex = 22;
             this.label6.Text = "LNA Gain";
-            this.label6.Click += new System.EventHandler(this.label6_Click);
             // 
             // lblLimeSDR_TIAGain
             // 
@@ -407,7 +405,7 @@
             // 
             this.tbLimeSDR_LNAGain.AutoSize = false;
             this.tbLimeSDR_LNAGain.Location = new System.Drawing.Point(7, 41);
-            this.tbLimeSDR_LNAGain.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbLimeSDR_LNAGain.Margin = new System.Windows.Forms.Padding(4);
             this.tbLimeSDR_LNAGain.Maximum = 15;
             this.tbLimeSDR_LNAGain.Minimum = 1;
             this.tbLimeSDR_LNAGain.Name = "tbLimeSDR_LNAGain";
@@ -427,7 +425,6 @@
             this.lblLimeSDR_PGAGain.TabIndex = 27;
             this.lblLimeSDR_PGAGain.Text = "N/A";
             this.lblLimeSDR_PGAGain.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            this.lblLimeSDR_PGAGain.Click += new System.EventHandler(this.lblLimeSDR_PGAGain_Click);
             // 
             // label7
             // 
@@ -444,7 +441,7 @@
             this.tbLimeSDR_PGAGain.AutoSize = false;
             this.tbLimeSDR_PGAGain.LargeChange = 3;
             this.tbLimeSDR_PGAGain.Location = new System.Drawing.Point(7, 138);
-            this.tbLimeSDR_PGAGain.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbLimeSDR_PGAGain.Margin = new System.Windows.Forms.Padding(4);
             this.tbLimeSDR_PGAGain.Maximum = 31;
             this.tbLimeSDR_PGAGain.Name = "tbLimeSDR_PGAGain";
             this.tbLimeSDR_PGAGain.Size = new System.Drawing.Size(284, 22);
@@ -459,7 +456,7 @@
             this.tbLimeSDR_TIAGain.AutoSize = false;
             this.tbLimeSDR_TIAGain.LargeChange = 1;
             this.tbLimeSDR_TIAGain.Location = new System.Drawing.Point(7, 89);
-            this.tbLimeSDR_TIAGain.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbLimeSDR_TIAGain.Margin = new System.Windows.Forms.Padding(4);
             this.tbLimeSDR_TIAGain.Maximum = 3;
             this.tbLimeSDR_TIAGain.Minimum = 1;
             this.tbLimeSDR_TIAGain.Name = "tbLimeSDR_TIAGain";
@@ -500,7 +497,7 @@
             0,
             131072});
             this.udFrequencyDiff.Location = new System.Drawing.Point(180, 530);
-            this.udFrequencyDiff.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.udFrequencyDiff.Margin = new System.Windows.Forms.Padding(4);
             this.udFrequencyDiff.Minimum = new decimal(new int[] {
             100,
             0,
@@ -536,9 +533,9 @@
             this.groupBox4.Controls.Add(this.label11);
             this.groupBox4.Controls.Add(this.label9);
             this.groupBox4.Location = new System.Drawing.Point(8, 17);
-            this.groupBox4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox4.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox4.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox4.Size = new System.Drawing.Size(323, 578);
             this.groupBox4.TabIndex = 20;
             this.groupBox4.TabStop = false;
@@ -548,7 +545,7 @@
             // 
             this.txtTemperature.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtTemperature.Location = new System.Drawing.Point(23, 501);
-            this.txtTemperature.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtTemperature.Margin = new System.Windows.Forms.Padding(4);
             this.txtTemperature.Name = "txtTemperature";
             this.txtTemperature.ReadOnly = true;
             this.txtTemperature.Size = new System.Drawing.Size(276, 26);
@@ -569,7 +566,7 @@
             // 
             this.txtSerialNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtSerialNumber.Location = new System.Drawing.Point(23, 447);
-            this.txtSerialNumber.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtSerialNumber.Margin = new System.Windows.Forms.Padding(4);
             this.txtSerialNumber.Name = "txtSerialNumber";
             this.txtSerialNumber.ReadOnly = true;
             this.txtSerialNumber.Size = new System.Drawing.Size(276, 26);
@@ -590,7 +587,7 @@
             // 
             this.txtGatewareVersion.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtGatewareVersion.Location = new System.Drawing.Point(23, 396);
-            this.txtGatewareVersion.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtGatewareVersion.Margin = new System.Windows.Forms.Padding(4);
             this.txtGatewareVersion.Name = "txtGatewareVersion";
             this.txtGatewareVersion.ReadOnly = true;
             this.txtGatewareVersion.Size = new System.Drawing.Size(276, 26);
@@ -611,7 +608,7 @@
             // 
             this.txtFirm_version.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtFirm_version.Location = new System.Drawing.Point(23, 346);
-            this.txtFirm_version.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtFirm_version.Margin = new System.Windows.Forms.Padding(4);
             this.txtFirm_version.Name = "txtFirm_version";
             this.txtFirm_version.ReadOnly = true;
             this.txtFirm_version.Size = new System.Drawing.Size(276, 26);
@@ -632,7 +629,7 @@
             // 
             this.txtRadioModel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtRadioModel.Location = new System.Drawing.Point(23, 245);
-            this.txtRadioModel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtRadioModel.Margin = new System.Windows.Forms.Padding(4);
             this.txtRadioModel.Name = "txtRadioModel";
             this.txtRadioModel.ReadOnly = true;
             this.txtRadioModel.Size = new System.Drawing.Size(276, 26);
@@ -653,7 +650,7 @@
             // 
             this.txtLimeSuiteVersion.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtLimeSuiteVersion.Location = new System.Drawing.Point(23, 295);
-            this.txtLimeSuiteVersion.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtLimeSuiteVersion.Margin = new System.Windows.Forms.Padding(4);
             this.txtLimeSuiteVersion.Name = "txtLimeSuiteVersion";
             this.txtLimeSuiteVersion.ReadOnly = true;
             this.txtLimeSuiteVersion.Size = new System.Drawing.Size(276, 26);
@@ -674,7 +671,7 @@
             // 
             this.txtRadioSerialNo.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtRadioSerialNo.Location = new System.Drawing.Point(23, 194);
-            this.txtRadioSerialNo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtRadioSerialNo.Margin = new System.Windows.Forms.Padding(4);
             this.txtRadioSerialNo.Name = "txtRadioSerialNo";
             this.txtRadioSerialNo.ReadOnly = true;
             this.txtRadioSerialNo.Size = new System.Drawing.Size(276, 26);
@@ -685,7 +682,7 @@
             // 
             this.txtModule.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtModule.Location = new System.Drawing.Point(23, 144);
-            this.txtModule.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtModule.Margin = new System.Windows.Forms.Padding(4);
             this.txtModule.Name = "txtModule";
             this.txtModule.ReadOnly = true;
             this.txtModule.Size = new System.Drawing.Size(276, 26);
@@ -696,7 +693,7 @@
             // 
             this.txtRadioName.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtRadioName.Location = new System.Drawing.Point(23, 94);
-            this.txtRadioName.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtRadioName.Margin = new System.Windows.Forms.Padding(4);
             this.txtRadioName.Name = "txtRadioName";
             this.txtRadioName.ReadOnly = true;
             this.txtRadioName.Size = new System.Drawing.Size(276, 26);
@@ -709,7 +706,7 @@
             this.comboRadioModel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboRadioModel.FormattingEnabled = true;
             this.comboRadioModel.Location = new System.Drawing.Point(23, 41);
-            this.comboRadioModel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.comboRadioModel.Margin = new System.Windows.Forms.Padding(4);
             this.comboRadioModel.Name = "comboRadioModel";
             this.comboRadioModel.Size = new System.Drawing.Size(276, 28);
             this.comboRadioModel.TabIndex = 31;
@@ -718,7 +715,7 @@
             // btnRadioRefresh
             // 
             this.btnRadioRefresh.Location = new System.Drawing.Point(111, 543);
-            this.btnRadioRefresh.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnRadioRefresh.Margin = new System.Windows.Forms.Padding(4);
             this.btnRadioRefresh.Name = "btnRadioRefresh";
             this.btnRadioRefresh.Size = new System.Drawing.Size(100, 28);
             this.btnRadioRefresh.TabIndex = 30;
@@ -769,7 +766,6 @@
             // toolTip_Gain
             // 
             this.toolTip_Gain.ShowAlways = true;
-            this.toolTip_Gain.Popup += new System.Windows.Forms.PopupEventHandler(this.toolTip_Gain_Popup);
             // 
             // timer
             // 
@@ -793,13 +789,24 @@
             this.statusStrip1.TabIndex = 48;
             this.statusStrip1.Text = "statusStrip1";
             // 
-            // toolStripStatusLabel_RxRate
+            // toolStripStatusLabel_Author
             // 
-            this.toolStripStatusLabel_RxRate.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)));
-            this.toolStripStatusLabel_RxRate.Name = "toolStripStatusLabel_RxRate";
-            this.toolStripStatusLabel_RxRate.Size = new System.Drawing.Size(74, 24);
-            this.toolStripStatusLabel_RxRate.Text = "RxRate: 0";
-            this.toolStripStatusLabel_RxRate.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.toolStripStatusLabel_Author.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)));
+            this.toolStripStatusLabel_Author.DoubleClickEnabled = true;
+            this.toolStripStatusLabel_Author.Name = "toolStripStatusLabel_Author";
+            this.toolStripStatusLabel_Author.Size = new System.Drawing.Size(476, 24);
+            this.toolStripStatusLabel_Author.Spring = true;
+            this.toolStripStatusLabel_Author.Text = "YT7PWR / netdog";
+            this.toolStripStatusLabel_Author.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.toolStripStatusLabel_Author.DoubleClick += new System.EventHandler(this.toolStripStatusLabel_Author_DoubleClick);
+            // 
+            // toolStripStatusLabel_Version
+            // 
+            this.toolStripStatusLabel_Version.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)));
+            this.toolStripStatusLabel_Version.Name = "toolStripStatusLabel_Version";
+            this.toolStripStatusLabel_Version.Size = new System.Drawing.Size(50, 24);
+            this.toolStripStatusLabel_Version.Text = "v0.0.0";
+            this.toolStripStatusLabel_Version.DoubleClick += new System.EventHandler(this.toolStripStatusLabel_Version_DoubleClick);
             // 
             // toolStripStatusLabel_Temp
             // 
@@ -809,21 +816,13 @@
             this.toolStripStatusLabel_Temp.Text = "N/A";
             this.toolStripStatusLabel_Temp.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // toolStripStatusLabel_Author
+            // toolStripStatusLabel_RxRate
             // 
-            this.toolStripStatusLabel_Author.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)));
-            this.toolStripStatusLabel_Author.Name = "toolStripStatusLabel_Author";
-            this.toolStripStatusLabel_Author.Size = new System.Drawing.Size(515, 24);
-            this.toolStripStatusLabel_Author.Spring = true;
-            this.toolStripStatusLabel_Author.Text = "YT7PWR / netdog";
-            this.toolStripStatusLabel_Author.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // toolStripStatusLabel_Version
-            // 
-            this.toolStripStatusLabel_Version.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)));
-            this.toolStripStatusLabel_Version.Name = "toolStripStatusLabel_Version";
-            this.toolStripStatusLabel_Version.Size = new System.Drawing.Size(50, 24);
-            this.toolStripStatusLabel_Version.Text = "v0.0.0";
+            this.toolStripStatusLabel_RxRate.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)));
+            this.toolStripStatusLabel_RxRate.Name = "toolStripStatusLabel_RxRate";
+            this.toolStripStatusLabel_RxRate.Size = new System.Drawing.Size(74, 24);
+            this.toolStripStatusLabel_RxRate.Text = "RxRate: 0";
+            this.toolStripStatusLabel_RxRate.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // LimeSDRControllerDialog
             // 
@@ -836,7 +835,7 @@
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.close);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "LimeSDRControllerDialog";

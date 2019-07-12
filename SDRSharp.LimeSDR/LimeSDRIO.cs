@@ -296,7 +296,7 @@ namespace SDRSharp.LimeSDR
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
-                throw ex;
+                throw ex; 
             }
         }
 
