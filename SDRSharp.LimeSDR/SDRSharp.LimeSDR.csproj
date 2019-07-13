@@ -117,6 +117,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ControllerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="LimeSDRControllerDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -140,10 +143,14 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="ControllerPanel.resx">
+      <DependentUpon>ControllerPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="LimeSDRControllerDialog.resx">
       <DependentUpon>LimeSDRControllerDialog.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

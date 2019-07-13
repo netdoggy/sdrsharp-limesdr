@@ -28,6 +28,7 @@ namespace SDRSharp.LimeSDR
         public double _sampleRate = 1.5 * 1e6;
         public double _freqDiff = 0.0;
         private Dictionary<int, string> _sampleRates = new Dictionary<int, string>();
+        private ControllerPanel _panel = null;
 
         public LimeSDRControllerDialog(LimeSDRIO owner)
         {
@@ -35,8 +36,8 @@ namespace SDRSharp.LimeSDR
             {
                 InitializeComponent();
                 string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
                 toolStripStatusLabel_Version.Text = "v" + assemblyVersion.ToString().Replace(".0", "");
+
                 float dpi = this.CreateGraphics().DpiX;
                 float ratio = dpi / 96.0f;
                 string font_name = this.Font.Name;
@@ -64,7 +65,7 @@ namespace SDRSharp.LimeSDR
 
                 gainBar_Scroll(this, EventArgs.Empty); // force resave param to lime device?                 
                 lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value.ToString() + "dB";
-                samplerateComboBox.SelectedValue = Int32.Parse(Utils.GetStringSetting("LimeSDR SampleRate", "768000"));
+                samplerateComboBox.SelectedValue = Int32.Parse(Utils.GetStringSetting("LimeSDR SampleRate", "2304000"));
                 LPBWcomboBox.Text = Utils.GetStringSetting("LimeSDR LPBW", "1.5MHz");
                 rx0.Checked = Utils.GetBooleanSetting("LimeSDR RX0");
                 rx1.Checked = Utils.GetBooleanSetting("LimeSDR RX1");
@@ -79,11 +80,17 @@ namespace SDRSharp.LimeSDR
             }
             catch (Exception ex)
             {
-                Debug.Write(ex.ToString());
+                MessageBox.Show(ex.Message, "LimeSDR Loading Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Debug.Write(ex.ToString());     
                 throw ex;
             }
         }
 
+
+        public void setPanel(ControllerPanel panel)
+        {
+            _panel = panel;
+        }
         private bool Initialized
         {
             get
@@ -108,10 +115,15 @@ namespace SDRSharp.LimeSDR
                 19200000,
                 24576000,
                 30000000,
+                32767999,
                 35000000,
+                36864000,
                 40000000,
+                40550400,
                 49152000,
-                55296000
+                55296000,
+                64143360,
+                65000000,
             };
 
             foreach (var sr in sampleRates)
@@ -188,6 +200,7 @@ namespace SDRSharp.LimeSDR
             catch (Exception ex)
             {
                 _sampleRate = 1.5 * 1e6;
+                throw ex;
             }
         }
 
@@ -550,7 +563,7 @@ namespace SDRSharp.LimeSDR
             if (!_owner.Device.IsStreaming)
                 return;
 
-            NativeMethods.LMS_GetStreamStatus(_owner.Device._lms_Stream, ref lms_stream_status);
+            NativeMethods.LMS_GetStreamStatus(_owner.Device._lms_Stream, out lms_stream_status);
             uint res = 0;
             //uint.TryParse(this.txtDropPackets.Text, out res);
             //this.txtDropPackets.Text = (res + lms_stream_status.droppedPackets).ToString();
@@ -569,8 +582,13 @@ namespace SDRSharp.LimeSDR
                 return;
 
             var temp = _owner.Device.Temperature();
-            txtTemperature.Text = temp == 0 ? "N/A" : Math.Round(temp, 2).ToString() + " C";
+            txtTemperature.Text = temp == 0 ? "-°" : Math.Round(temp, 2).ToString() + "°";
             toolStripStatusLabel_Temp.Text = txtTemperature.Text;
+
+            if (_panel != null )
+            {
+                _panel.setTemp(toolStripStatusLabel_Temp.Text);
+            }
         }
         public unsafe void GetLimeSDRDeviceInfo()
         {
@@ -645,12 +663,6 @@ namespace SDRSharp.LimeSDR
             RefreshStreamStatus();
         }
 
-      
-        private void toolStripStatusLabel_Author_DoubleClick(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("https://github.com/netdoggy/sdrsharp-limesdr");
-        }
-
         private void toolStripStatusLabel_Version_DoubleClick(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start("https://github.com/netdoggy/sdrsharp-limesdr");
@@ -659,6 +671,11 @@ namespace SDRSharp.LimeSDR
         private void LimeSDRControllerDialog_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void toolStripStatusLabel_Author_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://github.com/netdoggy/sdrsharp-limesdr");
         }
     }
 }

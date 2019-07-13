@@ -205,49 +205,56 @@ namespace SDRSharp.LimeSDR
 
         #region callback
 
-        private unsafe void ReceiveSamples_sync()
+        private unsafe void ThreadReceiveSamples_Sync()
         {
-            lms_stream_meta_t meta = new lms_stream_meta_t();
-            meta.timestamp = 0;
-            meta.flushPartialPacket = false;
-            meta.waitForTimestamp = false;
-
-            while (_isStreaming)
+            try
             {
+                lms_stream_meta_t meta = new lms_stream_meta_t();
+                meta.timestamp = 0;
+                meta.flushPartialPacket = false;
+                meta.waitForTimestamp = false;
 
-                if (_iqBuffer == null || _iqBuffer.Length != _readLength)
+
+                while (_isStreaming)
                 {
-                    _iqBuffer = UnsafeBuffer.Create((int)_readLength, sizeof(Complex));
-                    _iqPtr = (Complex*)_iqBuffer;
-                    Thread.Sleep(100);
-                }
 
-                if (_samplesBuffer == null || _samplesBuffer.Length != (2 * _readLength))
-                {
-                    _samplesBuffer = UnsafeBuffer.Create((int)(2 * _readLength), sizeof(float));
-                    _samplesPtr = (float*)_samplesBuffer;
-                    Thread.Sleep(100);
-                }
+                    if (_iqBuffer == null || _iqBuffer.Length != _readLength)
+                    {
+                        _iqBuffer = UnsafeBuffer.Create((int)_readLength, sizeof(Complex));
+                        _iqPtr = (Complex*)_iqBuffer;
+                        Thread.Sleep(1);
+                    }
 
-                var samplesReceived = NativeMethods.LMS_RecvStream(_lms_Stream, _samplesPtr, _readLength, ref meta, SampleTimeoutMs);
-                if (samplesReceived < 0)
-                {
-                    MessageBox.Show("LimeSDRDevice::ReceiveSamples_sync read error");
-                    //throw ApplicationException("LimeSDRDevice::ReceiveSamples_sync read error");
-                    break;
-                }
-                var ptrIq = _iqPtr;
+                    if (_samplesBuffer == null || _samplesBuffer.Length != (2 * _readLength))
+                    {
+                        _samplesBuffer = UnsafeBuffer.Create((int)(2 * _readLength), sizeof(float));
+                        _samplesPtr = (float*)_samplesBuffer;
+                        Thread.Sleep(1);
+                    }
 
-                for (int i = 0; i < _readLength; i++)
-                {
-                    ptrIq->Real = _samplesPtr[i * 2] / SpectrumOffset;
-                    ptrIq->Imag = _samplesPtr[i * 2 + 1] / SpectrumOffset;
-                    ptrIq++;
-                }
+                    var samplesReceived = NativeMethods.LMS_RecvStream(_lms_Stream, _samplesPtr, _readLength, ref meta, SampleTimeoutMs);
+                    if (samplesReceived < 0)
+                    {
+                        MessageBox.Show("LimeSDRDevice::ReceiveSamples_sync read error");
+                        //throw ApplicationException("LimeSDRDevice::ReceiveSamples_sync read error");
+                        break;
+                    }
+                    var ptrIq = _iqPtr;
 
-                ComplexSamplesAvailable(_iqPtr, _iqBuffer.Length);
+                    for (int i = 0; i < _readLength; i++)
+                    {
+                        ptrIq->Real = _samplesPtr[i * 2] / SpectrumOffset;
+                        ptrIq->Imag = _samplesPtr[i * 2 + 1] / SpectrumOffset;
+                        ptrIq++;
+                    }
+
+                    ComplexSamplesAvailable(_iqPtr, _iqBuffer.Length);
+                }
+            } catch (Exception ex)
+            {
+                this._parrent.LogError(ex, "LimeSDR_Thred_Error.txt");
+                _isStreaming = false;
             }
-
             NativeMethods.LMS_StopStream(_lms_Stream);
 
             Close();
@@ -403,7 +410,10 @@ namespace SDRSharp.LimeSDR
             _sampleRate = sr;
             SpectrumOffset = specOffset;
 
-            NativeMethods.LMS_Init(_lms_device);
+            if (NativeMethods.LMS_Init(_lms_device) != 0)
+            {
+                throw new ApplicationException(NativeMethods.limesdr_strerror());
+            }
 
             if (NativeMethods.LMS_EnableChannel(_lms_device, LMS_CH_RX, _channel, true) != 0)
             {
@@ -421,15 +431,14 @@ namespace SDRSharp.LimeSDR
             }
             this.SampleRate = _sampleRate;
 
-
             LPBW = _lpbw;
 
             lms_stream_t streamId = new lms_stream_t();
-            streamId.handle = 0;
-            streamId.channel = _channel;                //channel number
-            streamId.fifoSize = 16 * 1024;              //fifo size in samples
-            streamId.throughputVsLatency = 0.5f;        //balance
-            streamId.isTx = false;                      //RX channel
+            streamId.handle = (UIntPtr)0;                // size_t on LimeSuite.h
+            streamId.channel = _channel;                // channel number
+            streamId.fifoSize = 16 * 1024;              // fifo size in samples
+            streamId.throughputVsLatency = 0.5f;        // balance
+            streamId.isTx = false;                      // RX channel
             streamId.dataFmt = dataFmt.LMS_FMT_F32;
             _lms_Stream = Marshal.AllocHGlobal(Marshal.SizeOf(streamId));
 
@@ -446,9 +455,10 @@ namespace SDRSharp.LimeSDR
             }
 
             _isStreaming = true;
+
             this.Frequency = (long)_centerFrequency;
 
-            _sampleThread = new Thread(ReceiveSamples_sync);
+            _sampleThread = new Thread(ThreadReceiveSamples_Sync);
             _sampleThread.Name = "limesdr_samples_rx";
             _sampleThread.Priority = ThreadPriority.Highest;
             _sampleThread.Start();

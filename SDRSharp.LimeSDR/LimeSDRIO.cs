@@ -12,19 +12,23 @@ using System.Text;
 using SDRSharp.Radio;
 using System.Windows.Forms;
 using System.Diagnostics;
+using SDRSharp.Common;
 
 namespace SDRSharp.LimeSDR
 {
-    public class LimeSDRIO : IFrontendController, IIQStreamController, IDisposable, IFloatingConfigDialogProvider, ITunableSource // @todo: buggy ISampleRateChangeSource
+    public class LimeSDRIO : IFrontendController, IIQStreamController, IDisposable, IFloatingConfigDialogProvider, ITunableSource
+       //,IConfigurationPanelProvider /* panel on left menu (need access > 0)  but disables IFloatingConfigDialogProvider */
+       // buggy ,ISampleRateChangeSource
+       // , IControlAwareObject /* sdrsharp controls  (need access > 0)  */
     {
         #region variable
 
         private long _frequency = 105500000L;
         private LimeSDRDevice _limeSDRDevice = null;
         private readonly LimeSDRControllerDialog _gui;
+        private readonly ControllerPanel _guiPanel;
         private SDRSharp.Radio.SamplesAvailableDelegate _callbackSamplesAvailable;
         //public event EventHandler SampleRateChanged;
-        //public bool _isStreaming;
         private uint _channel = 0;      // rx0
         private uint _ant = 2;          // ant_l
         private double _lpbw = 1.5 * 1e6;
@@ -36,6 +40,7 @@ namespace SDRSharp.LimeSDR
         private ushort _lnaGain = 9;
         private ushort _tiaGain = 1;
         private ushort _pgaGain = 11;
+        private ISharpControl _control;
 
         #endregion
 
@@ -232,9 +237,46 @@ namespace SDRSharp.LimeSDR
         #region constructor/destructor
 
         public LimeSDRIO()
-        {           
-            _gui = new LimeSDRControllerDialog(this);
-            _sampleRate = _gui._sampleRate;          
+        {
+            try
+            {
+               
+                _gui = new LimeSDRControllerDialog(this);
+                // shown only if frontend loaded with high access
+                _guiPanel = new ControllerPanel(this);
+                _gui.setPanel(_guiPanel);
+                _sampleRate = _gui._sampleRate;
+            }
+            catch (Exception ex )
+            {
+               // MessageBox.Show(ex.Message);
+                LogError(ex);
+                throw ex;
+            }
+        }
+
+        public void LogError(Exception ex, string fileName  = "LimeSDR_Error.txt")
+        {
+            string message = string.Format("Time: {0}", DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt"));
+            message += Environment.NewLine;
+            message += "-----------------------------------------------------------";
+            message += Environment.NewLine;
+            message += string.Format("Message: {0}", ex.Message);
+            message += Environment.NewLine;
+            message += string.Format("StackTrace: {0}", ex.StackTrace);
+            message += Environment.NewLine;
+            message += string.Format("Source: {0}", ex.Source);
+            message += Environment.NewLine;
+            message += string.Format("TargetSite: {0}", ex.TargetSite.ToString());
+            message += Environment.NewLine;
+            message += "-----------------------------------------------------------";
+            message += Environment.NewLine;
+
+            using (System.IO.StreamWriter writer = new System.IO.StreamWriter(fileName, true))
+            {
+                writer.WriteLine(message);
+                writer.Close();
+            }
         }
 
         ~LimeSDRIO()
@@ -410,6 +452,7 @@ namespace SDRSharp.LimeSDR
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+                throw ex;
             }
         }
 
@@ -446,6 +489,19 @@ namespace SDRSharp.LimeSDR
                 return;
 
             _gui.Hide();
+        }
+
+      
+        public void SetControl(object control)
+        {
+            this._control = (ISharpControl)control;
+        }
+        public ISharpControl SharpControl
+        {
+            get
+            {
+                return this._control;
+            }
         }
 
         public long Frequency
@@ -497,6 +553,15 @@ namespace SDRSharp.LimeSDR
         public long MinimumTunableFrequency
         {
             get { return 0; }
+        }
+
+      
+        public UserControl Gui
+        {
+            get
+            {
+                return this._guiPanel;
+            }
         }
     }
 }
