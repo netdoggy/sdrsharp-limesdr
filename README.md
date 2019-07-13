@@ -1,13 +1,13 @@
 # sdrsharp-limesdr
 
-LimeSDR for SDR# Plugin
+LimeSDR driver / frontend for SDR#
 
 forked from https://github.com/jocover/sdrsharp-limesdr 
 which is forked from https://github.com/jocover/sdrsharp-limesdr
 
 ## Installation
 
-1. Copy SDRSharp.LimeSDR.DLL file to SDR# installation directory
+1. Copy SDRSharp.LimeSDR.DLL and LimeSuite.dll file to SDR# installation directory
 2. Add the following line in the frontendPlugins sections of FrontEnds.xml file:
 
 	&lt;add key="LimeSDR" value="SDRSharp.LimeSDR.LimeSDRIO,SDRSharp.LimeSDR" /&gt;
