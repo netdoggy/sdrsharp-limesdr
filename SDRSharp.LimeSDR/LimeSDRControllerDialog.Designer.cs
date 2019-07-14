@@ -265,12 +265,14 @@
             "20MHz",
             "40MHz",
             "50MHz",
-            "60MHz"});
+            "60MHz",
+            "70MHz",
+            "80MHz"});
             this.LPBWcomboBox.Location = new System.Drawing.Point(140, 370);
             this.LPBWcomboBox.Name = "LPBWcomboBox";
             this.LPBWcomboBox.Size = new System.Drawing.Size(68, 24);
             this.LPBWcomboBox.TabIndex = 16;
-            this.LPBWcomboBox.Text = "1.5MHz";
+            this.LPBWcomboBox.Text = "60MHz";
             this.LPBWcomboBox.SelectedIndexChanged += new System.EventHandler(this.LPBWcomboBox_SelectedIndexChanged);
             // 
             // udSpecOffset
