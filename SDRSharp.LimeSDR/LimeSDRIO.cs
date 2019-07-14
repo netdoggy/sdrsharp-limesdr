@@ -56,7 +56,7 @@ namespace SDRSharp.LimeSDR
             get
             {
                 if (Device != null)
-                    return Device._lms_device;
+                    return Device._ptrLmsDevice;
                 else
                     return IntPtr.Zero;
             }
@@ -435,7 +435,8 @@ namespace SDRSharp.LimeSDR
                 //_isStreaming = false;
                 _gui.grpChannel.Enabled = true;
                 _gui.samplerateComboBox.Enabled = true;
-                _gui.toolStripStatusLabel_RxRate.Text = "";
+                _gui.toolStripStatusLabel_RxRate.Text = "RxRate: 0 MB/s";
+                _gui.toolStripStatusLabel_DroppedPackets.Text = "0";
 
                 if (_limeSDRDevice != null)
                 {

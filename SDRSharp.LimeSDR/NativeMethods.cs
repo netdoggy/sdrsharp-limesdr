@@ -128,15 +128,15 @@ namespace SDRSharp.LimeSDR
         [MarshalAs(UnmanagedType.U1)]
         bool active;
         ///Number of samples in FIFO buffer
-        public uint fifoFilledCount;
+        public UInt32 fifoFilledCount;
         ///Size of FIFO buffer
-        public uint fifoSize;
+        public UInt32 fifoSize;
         ///FIFO underrun count
-        public uint underrun;
+        public UInt32 underrun;
         ///FIFO overrun count
-        public uint overrun;
+        public UInt32 overrun;
         ///Number of dropped packets by HW
-        public uint droppedPackets;
+        public UInt32 droppedPackets;
         ///Sampling rate of the stream
         public double sampleRate;
         ///Combined data rate of all stream of the same direction (TX or RX)
@@ -195,6 +195,9 @@ namespace SDRSharp.LimeSDR
 
         [DllImport(APIDLL, EntryPoint = "LMS_StopStream", CallingConvention = CallingConvention.Cdecl)]
         public static unsafe extern int LMS_StopStream(IntPtr stream);
+
+        [DllImport(APIDLL, EntryPoint = "LMS_DestroyStream", CallingConvention = CallingConvention.Cdecl)]
+        public static unsafe extern int LMS_DestroyStream(IntPtr dev, IntPtr stream);
 
         [DllImport(APIDLL, EntryPoint = "LMS_RecvStream", CallingConvention = CallingConvention.Cdecl)]
         public static unsafe extern int LMS_RecvStream(IntPtr stream, void* samples, uint sample_count, ref lms_stream_meta_t meta, uint timeout_ms);

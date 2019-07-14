@@ -5,19 +5,14 @@
  * modifications by netdog 2019 https://github.com/netdoggy/sdrsharp-limesdr
  */
 
+using SDRSharp.Radio;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
-using SDRSharp.Radio;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Forms;
 
 namespace SDRSharp.LimeSDR
 {
@@ -53,6 +48,7 @@ namespace SDRSharp.LimeSDR
 
                 _initialized = true;
                 toolStripStatusLabel_RxRate.Text = "RxRate: 0 MB/s";
+                toolStripStatusLabel_DroppedPackets.Text = "0";
                 comboRadioModel.Text = Utils.GetStringSetting("LimeSDR.model", "");
 
                 tbLimeSDR_Gain.Value = Utils.GetIntSetting("LimeSDR.Gain", 40);
@@ -510,6 +506,7 @@ namespace SDRSharp.LimeSDR
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+                throw ex;
             }
         }
 
@@ -560,7 +557,7 @@ namespace SDRSharp.LimeSDR
         //public lms_stream_status_t lms_stream_status_accomulated = new lms_stream_status_t();
         public void RefreshStreamStatus()
         {
-            if (_owner == null || _owner.LimeSDR_Device == IntPtr.Zero || _owner.Device._lms_Stream == IntPtr.Zero)
+            if (_owner == null || _owner.LimeSDR_Device == IntPtr.Zero || _owner.Device._ptrLmsStream == IntPtr.Zero)
             {
                 return;
             }
@@ -568,8 +565,8 @@ namespace SDRSharp.LimeSDR
             if (!_owner.Device.IsStreaming)
                 return;
 
-            NativeMethods.LMS_GetStreamStatus(_owner.Device._lms_Stream, out lms_stream_status);
-            uint res = 0;
+            NativeMethods.LMS_GetStreamStatus(_owner.Device._ptrLmsStream, out lms_stream_status);
+
             //uint.TryParse(this.txtDropPackets.Text, out res);
             //this.txtDropPackets.Text = (res + lms_stream_status.droppedPackets).ToString();
             toolStripStatusLabel_RxRate.Text =
@@ -579,6 +576,7 @@ namespace SDRSharp.LimeSDR
                 //+ "/" + lms_stream_status.overrun.ToString() 
                 //+ " | " + lms_stream_status.droppedPackets.ToString() 
                 "RxRate: " + Math.Round(lms_stream_status.linkRate / 1e6, 2).ToString() + " MB/s";
+            toolStripStatusLabel_DroppedPackets.Text = (uint.Parse(toolStripStatusLabel_DroppedPackets.Text) + lms_stream_status.droppedPackets).ToString();
 
         }
         public void RefreshLimeSdrTemp()
@@ -682,5 +680,6 @@ namespace SDRSharp.LimeSDR
         {
             System.Diagnostics.Process.Start("https://github.com/netdoggy/sdrsharp-limesdr");
         }
+
     }
 }
