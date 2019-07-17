@@ -59,7 +59,8 @@ namespace SDRSharp.LimeSDR
                 RefreshLabelTiaGain();
                 RefreshLabelPgaGain();
 
-                gainBar_Scroll(this, EventArgs.Empty); // force resave param to lime device?                 
+                gainBar_Scroll(this, EventArgs.Empty); // set device param from gui
+                trackBar1_Scroll(this, EventArgs.Empty); // set device param from gui
                 lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value.ToString() + "dB";
                 samplerateComboBox.SelectedValue = Int32.Parse(Utils.GetStringSetting("LimeSDR.SampleRate", "2304000"));
                 LPBWcomboBox.Text = Utils.GetStringSetting("LimeSDR.LPBW", "60MHz");
@@ -200,15 +201,23 @@ namespace SDRSharp.LimeSDR
             }
         }
 
+        private void saveSettings()
+        {
+            Utils.SaveSetting("LimeSDR.GainLNA", (int)tbLimeSDR_LNAGain.Value);
+            Utils.SaveSetting("LimeSDR.GainTIA", (int)tbLimeSDR_TIAGain.Value);
+            Utils.SaveSetting("LimeSDR.GainPGA", (int)tbLimeSDR_PGAGain.Value);
+        }
         private void close_Click(object sender, EventArgs e)
         {
             Hide();
+            saveSettings();
         }
 
         private void LimeSDRControllerDialog_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;
             Hide();
+            saveSettings();
         }
 
 
@@ -681,5 +690,24 @@ namespace SDRSharp.LimeSDR
             System.Diagnostics.Process.Start("https://github.com/netdoggy/sdrsharp-limesdr");
         }
 
+        private void trackBar1_ValueChanged(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+
+            var ratio = trackBar1.Value > 1 ? 1.0 / (float)Math.Pow(1.85, trackBar1.Value) : 1.0;
+
+            label18.Text = (ratio > 0.999999) ? "1(off)" : ratio.ToString();
+
+            if (_owner == null || _owner.Device == null)
+                return;
+
+             _owner.Device.dcRemovalRatio = (float)ratio;
+ 
+
+        }
     }
 }

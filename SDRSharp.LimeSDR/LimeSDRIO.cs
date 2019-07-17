@@ -387,46 +387,46 @@ namespace SDRSharp.LimeSDR
             }
         }
 
-        public void ReStart()
-        {
-            try
-            {
-                _gui.grpChannel.Enabled = false;
-                _gui.samplerateComboBox.Enabled = false;
+        //public void ReStart()
+        //{
+        //    try
+        //    {
+        //        _gui.grpChannel.Enabled = false;
+        //        _gui.samplerateComboBox.Enabled = false;
 
-                if (this._limeSDRDevice == null)
-                {
-                    _limeSDRDevice = new LimeSDRDevice(this);
-                    _limeSDRDevice.SamplesAvailable += LimeSDRDevice_SamplesAvailable;
-                    //_limeSDRDevice.SampleRateChanged += LimeSDRDevice_SampleRateChanged;
-                    //_limeSDRDevice.SampleRate = _sampleRate;
-                }
+        //        if (this._limeSDRDevice == null)
+        //        {
+        //            _limeSDRDevice = new LimeSDRDevice(this);
+        //            _limeSDRDevice.SamplesAvailable += LimeSDRDevice_SamplesAvailable;
+        //            //_limeSDRDevice.SampleRateChanged += LimeSDRDevice_SampleRateChanged;
+        //            //_limeSDRDevice.SampleRate = _sampleRate;
+        //        }
 
-                if (!_limeSDRDevice.Open(RadioName))
-                {
-                    _limeSDRDevice.Close();
-                    _limeSDRDevice.Open(RadioName);
-                }
+        //        if (!_limeSDRDevice.Open(RadioName))
+        //        {
+        //            _limeSDRDevice.Close();
+        //            _limeSDRDevice.Open(RadioName);
+        //        }
 
-                _limeSDRDevice.LPBW = _gui.LPBW;
-                //_limeSDRDevice.SampleRate = _sampleRate;
-                _limeSDRDevice.Start(_channel, _lpbw, _gain, _ant, _sampleRate, _specOffset);
-                _limeSDRDevice.LPBW = _gui.LPBW;
-                _limeSDRDevice.LNAgain = _gui.LNAGain;
-                _limeSDRDevice.PGAgain = _gui.PGAGain;
-                _limeSDRDevice.TIAgain = _gui.TIAGain;
+        //        _limeSDRDevice.LPBW = _gui.LPBW;
+        //        //_limeSDRDevice.SampleRate = _sampleRate;
+        //        _limeSDRDevice.Start(_channel, _lpbw, _gain, _ant, _sampleRate, _specOffset);
+        //        _limeSDRDevice.LPBW = _gui.LPBW;
+        //        _limeSDRDevice.LNAgain = _gui.LNAGain;
+        //        _limeSDRDevice.PGAgain = _gui.PGAGain;
+        //        _limeSDRDevice.TIAgain = _gui.TIAGain;
 
-                //_isStreaming = true;
-                _gui.RefreshFormAllGains();
-                _gui.GetLimeSDRDeviceInfo();
-            }
-            catch (Exception ex)
-            {
-                _gui.grpChannel.Enabled = true;
-                _gui.samplerateComboBox.Enabled = true;
-                Debug.Write(ex.ToString());
-            }
-        }
+        //        //_isStreaming = true;
+        //        _gui.RefreshFormAllGains();
+        //        _gui.GetLimeSDRDeviceInfo();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _gui.grpChannel.Enabled = true;
+        //        _gui.samplerateComboBox.Enabled = true;
+        //        Debug.Write(ex.ToString());
+        //    }
+        //}
 
         public void Stop()
         {

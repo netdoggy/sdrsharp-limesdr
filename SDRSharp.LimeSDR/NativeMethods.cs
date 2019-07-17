@@ -60,7 +60,7 @@ namespace SDRSharp.LimeSDR
         public string tooltip;
     };
 
-    public enum dataFmt
+    public enum dataFmt : UInt32
     {
         LMS_FMT_F32 = 0,    /**<32-bit floating point*/
         LMS_FMT_I16 = 1,      /**<16-bit integers*/
@@ -80,12 +80,12 @@ namespace SDRSharp.LimeSDR
 
     }
 
-    public enum lms_loopback_t
+    public enum lms_loopback_t : UInt32
     {
         LMS_LOOPBACK_NONE   /**<Return to normal operation (disable loopback)*/
     }
 
-    public enum lms_testsig_t
+    public enum lms_testsig_t : UInt32
     {
         LMS_TESTSIG_NONE = 0,     /**<Disable test signals. Return to normal operation*/
         LMS_TESTSIG_NCODIV8,    /**<Test signal from NCO half scale*/
@@ -162,8 +162,8 @@ namespace SDRSharp.LimeSDR
         [DllImport(APIDLL, EntryPoint = "LMS_Disconnect", CallingConvention = CallingConvention.Cdecl)]
         public static extern int LMS_Disconnect(IntPtr device);
 
-        [DllImport(APIDLL, EntryPoint = "LMS_IsOpen", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool LMS_IsOpen(IntPtr device, int port);
+        //[DllImport(APIDLL, EntryPoint = "LMS_IsOpen", CallingConvention = CallingConvention.Cdecl)]
+        //public static extern bool LMS_IsOpen(IntPtr device, int port);
 
         [DllImport(APIDLL, EntryPoint = "LMS_Init", CallingConvention = CallingConvention.Cdecl)]
         public static extern int LMS_Init(IntPtr device);
@@ -173,19 +173,19 @@ namespace SDRSharp.LimeSDR
 
 
         [DllImport(APIDLL, EntryPoint = "LMS_EnableChannel", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int LMS_EnableChannel(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, uint chan, [MarshalAs(UnmanagedType.U1)] bool enabled);
+        public static extern int LMS_EnableChannel(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, /*size_t*/ uint chan, [MarshalAs(UnmanagedType.U1)] bool enabled);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetLOFrequency", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int LMS_SetLOFrequency(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, uint chan, double frequency);
+        public static extern int LMS_SetLOFrequency(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, /*size_t*/ uint chan, double frequency);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetSampleRate", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int LMS_SetSampleRate(IntPtr device, double rate, uint oversample);
+        public static extern int LMS_SetSampleRate(IntPtr device, double rate, uint /*size_t*/ oversample);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetSampleRateDir", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int LMS_SetSampleRateDir(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, double rate, uint oversample);
+        public static extern int LMS_SetSampleRateDir(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, double rate, uint /*size_t*/ oversample);
 
         [DllImport(APIDLL, EntryPoint = "LMS_GetSampleRate", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int LMS_GetSampleRate(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, uint chan, ref double host_Hz, ref double rf_Hz);
+        public static extern int LMS_GetSampleRate(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, /*size_t*/ uint chan, ref double host_Hz, ref double rf_Hz);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetupStream", CallingConvention = CallingConvention.Cdecl)]
         public static unsafe extern int LMS_SetupStream(IntPtr dev, IntPtr stream);
@@ -200,7 +200,7 @@ namespace SDRSharp.LimeSDR
         public static unsafe extern int LMS_DestroyStream(IntPtr dev, IntPtr stream);
 
         [DllImport(APIDLL, EntryPoint = "LMS_RecvStream", CallingConvention = CallingConvention.Cdecl)]
-        public static unsafe extern int LMS_RecvStream(IntPtr stream, void* samples, uint sample_count, ref lms_stream_meta_t meta, uint timeout_ms);
+        public static unsafe extern int LMS_RecvStream(IntPtr stream, void* samples, /*size_t*/ uint sample_count, ref lms_stream_meta_t meta, uint timeout_ms);
 
         [DllImport(APIDLL, EntryPoint = "LMS_GetLastErrorMessage", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr LMS_GetLastErrorMessage();
@@ -214,10 +214,10 @@ namespace SDRSharp.LimeSDR
         }
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetAntenna", CallingConvention = CallingConvention.Cdecl)]
-        public static unsafe extern int LMS_SetAntenna(IntPtr device, [MarshalAs(UnmanagedType.U1)]bool dir_tx, uint chan, uint index);
+        public static unsafe extern int LMS_SetAntenna(IntPtr device, [MarshalAs(UnmanagedType.U1)]bool dir_tx, /*size_t*/ uint chan, /*size_t*/ uint index);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetTestSignal", CallingConvention = CallingConvention.Cdecl)]
-        public static unsafe extern int LMS_SetTestSignal(IntPtr device, [MarshalAs(UnmanagedType.U1)]bool dir_tx, uint chan, lms_testsig_t sig, Int16 dc_i, Int16 dc_q);
+        public static unsafe extern int LMS_SetTestSignal(IntPtr device, [MarshalAs(UnmanagedType.U1)]bool dir_tx, /*size_t*/ uint chan, lms_testsig_t sig, Int16 dc_i, Int16 dc_q);
 
         [DllImport(APIDLL, EntryPoint = "LMS_WriteParam", CallingConvention = CallingConvention.Cdecl)]
         public static extern int LMS_WriteParam(IntPtr device, LMS7Parameter param, UInt16 val);
@@ -226,31 +226,31 @@ namespace SDRSharp.LimeSDR
         public static extern int LMS_ReadParam(IntPtr device, LMS7Parameter param, ref UInt16 val);
 
         [DllImport(APIDLL, EntryPoint = "LMS_GetLOFrequency", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int LMS_GetLOFrequency(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, uint chan, ref double frequency);
+        public static extern int LMS_GetLOFrequency(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, /*size_t*/ uint chan, ref double frequency);
 
         [DllImport(APIDLL, EntryPoint = "LMS_GetChipTemperature", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int LMS_GetChipTemperature(IntPtr device, uint index, ref double temp);
+        public static extern int LMS_GetChipTemperature(IntPtr device, /*size_t*/ uint index, ref double temp);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetGaindB", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int LMS_SetGaindB(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, uint chan, uint gain);
+        public static extern int LMS_SetGaindB(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, /*size_t*/ uint chan, uint gain);
 
         [DllImport(APIDLL, EntryPoint = "LMS_GetGaindB", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int LMS_GetGaindB(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, uint chan, ref uint gain);
+        public static extern int LMS_GetGaindB(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, /*size_t*/ uint chan, out uint gain);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetLPFBW", CallingConvention = CallingConvention.Cdecl)]
-        public unsafe static extern int LMS_SetLPFBW(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, uint chan, double bandwidth);
+        public unsafe static extern int LMS_SetLPFBW(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, /*size_t*/ uint chan, double bandwidth);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetNCOIndex", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int LMS_SetNCOIndex(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, uint chan, int index, [MarshalAs(UnmanagedType.U1)] bool downconv);
+        public static extern int LMS_SetNCOIndex(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, /*size_t*/ uint chan, int index, [MarshalAs(UnmanagedType.U1)] bool downconv);
 
         [DllImport(APIDLL, EntryPoint = "LMS_SetNCOFrequency", CallingConvention = CallingConvention.Cdecl)]
-        public static unsafe extern int LMS_SetNCOFrequency(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, uint chan, double* frequency,     double pho);
+        public static unsafe extern int LMS_SetNCOFrequency(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, /*size_t*/ uint chan, double* frequency, double pho);
 
         [DllImport(APIDLL, EntryPoint = "LMS_GetDeviceInfo", CallingConvention = CallingConvention.Cdecl)]
         public unsafe static extern void* LMS_GetDeviceInfo(IntPtr device);
 
         [DllImport(APIDLL, EntryPoint = "LMS_Calibrate", CallingConvention = CallingConvention.Cdecl)]
-        public unsafe static extern int LMS_Calibrate(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, uint chan, double bw, uint flags);
+        public unsafe static extern int LMS_Calibrate(IntPtr device, [MarshalAs(UnmanagedType.U1)] bool dir_tx, /*size_t*/ uint chan, double bw, uint flags);
 
         [DllImport(APIDLL, EntryPoint = "LMS_GetLibraryVersion", CallingConvention = CallingConvention.Cdecl)]
         public unsafe static extern char* LMS_GetLibraryVersion();

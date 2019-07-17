@@ -30,7 +30,7 @@ namespace SDRSharp.LimeSDR
         public IntPtr _ptrLmsStream = IntPtr.Zero;
         private bool _isStreaming;
         private Thread _sampleThread = null;
-        private uint _channel = 0;  // rx0
+        private /*size_t*/ uint _channel = 0;
         private uint _ant = 2;      // ant_l
 
         private static uint _readLength = 5000;
@@ -205,8 +205,16 @@ namespace SDRSharp.LimeSDR
 
         #region callback
 
+  
+       public float dcRemovalRatio = 1f; 
+
         private unsafe void ThreadReceiveSamples_Sync()
         {
+
+            float dcRemovalAvg_real = 0.0f;
+            float dcRemovalAvg_img = 0.0f;
+
+            dcRemovalRatio = 1f; // (float)(1.0 - Math.Exp(-1.0 / SampleRate * 0.05));
             try
             {
                 lms_stream_meta_t meta = new lms_stream_meta_t();
@@ -214,12 +222,12 @@ namespace SDRSharp.LimeSDR
                 meta.flushPartialPacket = false;
                 meta.waitForTimestamp = false;
 
-
                 while (_isStreaming)
                 {
 
                     if (_iqBuffer == null || _iqBuffer.Length != _readLength)
                     {
+                        
                         _iqBuffer = UnsafeBuffer.Create((int)_readLength, sizeof(Complex));
                         _iqPtr = (Complex*)_iqBuffer;
                         Thread.Sleep(1);
@@ -243,8 +251,18 @@ namespace SDRSharp.LimeSDR
 
                     for (int i = 0; i < _readLength; i++)
                     {
+                        
                         ptrIq->Real = _samplesPtr[i * 2] / SpectrumOffset;
                         ptrIq->Imag = _samplesPtr[i * 2 + 1] / SpectrumOffset;
+                       
+                        // dc removal
+                        if (dcRemovalRatio < 0.999999f)
+                        {
+                            dcRemovalAvg_real = dcRemovalRatio * (ptrIq->Real - dcRemovalAvg_real) + dcRemovalAvg_real;
+                            dcRemovalAvg_img = dcRemovalRatio * (ptrIq->Imag - dcRemovalAvg_img) + dcRemovalAvg_img;
+                            ptrIq->Real -= dcRemovalAvg_real;
+                            ptrIq->Imag -= dcRemovalAvg_img;
+                        }
                         ptrIq++;
                     }
 
@@ -252,7 +270,7 @@ namespace SDRSharp.LimeSDR
                 }
             } catch (Exception ex)
             {
-                this._parrent.LogError(ex, "LimeSDR_Thred_Error.txt");
+                this._parrent.LogError(ex, "LimeSDR_Thread_Error.txt");
                 _isStreaming = false;
             }
             NativeMethods.LMS_StopStream(_ptrLmsStream);
@@ -320,10 +338,26 @@ namespace SDRSharp.LimeSDR
                 return;
 
             _isStreaming = false;
-            _sampleThread.Join();
-            _sampleThread = null;
-            
-            Marshal.FreeHGlobal(_ptrLmsStream);
+
+            if (_sampleThread != null)
+            {
+                if (!_sampleThread.Join(10000))
+                {
+                    throw new Exception("ReadSamples Thread terminated by timeout");
+                }
+                _sampleThread = null;
+            }
+
+            if (_ptrLmsStream != IntPtr.Zero) {
+                NativeMethods.LMS_StopStream(_ptrLmsStream);
+                NativeMethods.LMS_DestroyStream(_ptrLmsDevice, _ptrLmsStream);
+                _ptrLmsStream = IntPtr.Zero;
+
+
+                Marshal.FreeHGlobal(_ptrLmsStream);
+            }
+            Close();
+
             _ptrLmsStream = IntPtr.Zero;
 
         }
@@ -408,7 +442,7 @@ namespace SDRSharp.LimeSDR
                 throw new ApplicationException("Start() Already running");
             }
             _ant = ant;
-            _channel = ch;
+            _channel = /*size_t*/ ch;
             _lpbw = lpbw;
             _gain = (uint)gain;
             _sampleRate = sr;
@@ -424,7 +458,7 @@ namespace SDRSharp.LimeSDR
                 throw new ApplicationException(NativeMethods.limesdr_strerror());
             }
 
-            if (NativeMethods.LMS_SetAntenna(_ptrLmsDevice, LMS_CH_RX, _channel, _ant) != 0)
+            if (NativeMethods.LMS_SetAntenna(_ptrLmsDevice, LMS_CH_RX, _channel, /*size_t*/ _ant) != 0)
             {
                 throw new ApplicationException(NativeMethods.limesdr_strerror());
             }
@@ -438,8 +472,8 @@ namespace SDRSharp.LimeSDR
             LPBW = _lpbw;
 
             lms_stream_t streamId = new lms_stream_t();
-            streamId.handle = (UIntPtr)0;                // size_t on LimeSuite.h
-            streamId.channel = _channel;                // channel number
+            streamId.handle = (UIntPtr)0;               // size_t on LimeSuite.h
+            streamId.channel = (UInt32)_channel;        // channel number
             streamId.fifoSize = 16 * 1024;              // fifo size in samples
             streamId.throughputVsLatency = 0.5f;        // balance
             streamId.isTx = false;                      // RX channel
@@ -470,7 +504,6 @@ namespace SDRSharp.LimeSDR
 
         public unsafe long Frequency
         {
-
             get
             {
                 if (_ptrLmsDevice != IntPtr.Zero)
@@ -490,83 +523,95 @@ namespace SDRSharp.LimeSDR
                 {
                     if (!_isStreaming)
                     {
-                        _old_centerFrequency = _centerFrequency;
+                        //_old_centerFrequency = _centerFrequency;
                         return;
                     }
 
-                    if (_centerFrequency < 30 * 1e6 && _old_centerFrequency >= 30 * 1e6)
+                    if (NativeMethods.LMS_SetLOFrequency(_ptrLmsDevice, LMS_CH_RX, (uint)_channel, _centerFrequency + _freqDiff) != 0)
                     {
-                        _old_centerFrequency = _centerFrequency;
-                        Stop();
-                        _parrent.ReStart();
+                        throw new ApplicationException(NativeMethods.limesdr_strerror());
                     }
-                    else if (_centerFrequency > 30 * 1e6 && _old_centerFrequency <= 30 * 1e6)
-                    {
-                        _old_centerFrequency = _centerFrequency;
-                        Stop();
-                        _parrent.ReStart();
-                    }
-                    else
-                    {
-                        _old_centerFrequency = _centerFrequency;
 
-                        if (_ptrLmsDevice == IntPtr.Zero)
-                        {
-                            return;
-                        }
+                    return; 
+                    // already in LimeSuite
+                    //if (_centerFrequency < 30 * 1e6 && _old_centerFrequency >= 30 * 1e6)
+                    //{
+                    //    _old_centerFrequency = _centerFrequency;
+                    //    Stop();
+                    //    _parrent.ReStart();
+                    //}
+                    //else if (_centerFrequency > 30 * 1e6 && _old_centerFrequency <= 30 * 1e6)
+                    //{
+                    //    _old_centerFrequency = _centerFrequency;
+                    //    Stop();
+                    //    _parrent.ReStart();
+                    //}
+                    //else
+                    //{
+                    //    _old_centerFrequency = _centerFrequency;
 
-                        if (value >= 30 * 1e6)
-                        {
-                            if (NativeMethods.LMS_SetNCOIndex(_ptrLmsDevice, LMS_CH_RX, _channel, 15, true) != 0)   // 0.0 NCO
-                            {
-                                Stop();
-                                throw new ApplicationException(NativeMethods.limesdr_strerror());
-                            }
+                    //    if (_ptrLmsDevice == IntPtr.Zero)
+                    //    {
+                    //        return;
+                    //    }
 
-                            if (NativeMethods.LMS_SetLOFrequency(_ptrLmsDevice, LMS_CH_RX, _channel, _centerFrequency + _freqDiff) != 0)
-                            {
-                                throw new ApplicationException(NativeMethods.limesdr_strerror());
-                            }
-                        }
-                        else
-                        {
-                            if (NativeMethods.LMS_SetLOFrequency(_ptrLmsDevice, LMS_CH_RX, _channel, 30.0 * 1e6) != 0)
-                            {
-                                Stop();
-                                throw new ApplicationException(NativeMethods.limesdr_strerror());
-                            }
+                    //    if (value >= 30 * 1e6)
+                    //    {
+                    //        if (NativeMethods.LMS_SetNCOIndex(_ptrLmsDevice, LMS_CH_RX, _channel, 15, true) != 0)   // 0.0 NCO
+                    //        {                                
+                    //            throw new ApplicationException(NativeMethods.limesdr_strerror());
+                    //        }
 
-                            double[] losc_freq = new double[16];
-                            double[] pho = new double[1];
+                    //        if (NativeMethods.LMS_SetLOFrequency(_ptrLmsDevice, LMS_CH_RX, _channel, _centerFrequency + _freqDiff) != 0)
+                    //        {
+                    //            throw new ApplicationException(NativeMethods.limesdr_strerror());
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        if (NativeMethods.LMS_SetLOFrequency(_ptrLmsDevice, LMS_CH_RX, _channel, 30.0 * 1e6) != 0)
+                    //        {
+                    //            Stop();
+                    //            throw new ApplicationException(NativeMethods.limesdr_strerror());
+                    //        }
 
-                            fixed (double* freq = &losc_freq[0])
-                            fixed (double* pho_ptr = &pho[0])
-                            {
-                                losc_freq[0] = (30.0 * 1e6) - _centerFrequency;
-                                losc_freq[15] = 0.0;
+                    //        double[] losc_freq = new double[16];
+                    //        double[] pho = new double[1];
 
-                                if (NativeMethods.LMS_SetNCOFrequency(_ptrLmsDevice, LMS_CH_RX, _channel, freq, 0.0) != 0)
-                                {
-                                    Stop();
-                                    throw new ApplicationException(NativeMethods.limesdr_strerror());
-                                }
+                    //        fixed (double* freq = &losc_freq[0])
+                    //        fixed (double* pho_ptr = &pho[0])
+                    //        {
+                    //            losc_freq[0] = (30.0 * 1e6) - _centerFrequency;
+                    //            losc_freq[15] = 0.0;
 
-                                if (NativeMethods.LMS_SetNCOIndex(_ptrLmsDevice, LMS_CH_RX, _channel, 0, false) != 0)
-                                {
-                                    Stop();
-                                    throw new ApplicationException(NativeMethods.limesdr_strerror());
-                                }
-                            }
-                        }
+                    //            MessageBox.Show("freq: " + ((30.0 * 1e6) - _centerFrequency).ToString() + ", NCO: " + (freq[0]).ToString(String.Format("###.###.###")) );
+                    //            if (NativeMethods.LMS_SetNCOFrequency(_ptrLmsDevice, LMS_CH_RX, _channel, freq, 0.0) != 0)
+                    //            {
+                    //                //Stop();
+                    //                MessageBox.Show("Error freq: " + ((30.0 * 1e6) - _centerFrequency).ToString() + ", NCO: " + (freq[0]).ToString(String.Format("###.###.###")));
+                    //                var err =  NativeMethods.limesdr_strerror();  
+                    //                throw new Exception(err != string.Empty ? err : "Error call LMS_SetNCOFrequency"  );
+                    //            }
+
+                    //            if (NativeMethods.LMS_SetNCOIndex(_ptrLmsDevice, LMS_CH_RX, _channel, 0, false) != 0)
+                    //            {
+                    //                MessageBox.Show("Error freq: " + ((30.0 * 1e6) - _centerFrequency).ToString() + ", NCO: " + (freq[0]).ToString(String.Format("###.###.###")));
+                    //                //Stop();
+                    //                var err =  NativeMethods.limesdr_strerror();
+                    //                throw new Exception(err != string.Empty ? err :  "Error call LMS_SetNCOIndex");
+                    //            }
+
+                    //        }
+                    //    }
                             
-                    }
+                    //}
                  
                 }
                 catch (Exception ex)
                 {
-                    throw ex;
+                    throw (ex);
                 }
-
+                
             }
 
         }
@@ -582,7 +627,7 @@ namespace SDRSharp.LimeSDR
             }
         }
 
-        public uint Channel
+        public /*size_t*/ uint Channel
         {
             get
             {
@@ -608,7 +653,7 @@ namespace SDRSharp.LimeSDR
                 {
                     if (_ptrLmsDevice != IntPtr.Zero || _ptrLmsDevice != null)
                     {
-                        if (NativeMethods.LMS_SetAntenna(_ptrLmsDevice, LMS_CH_RX, _channel, _ant) != 0)
+                        if (NativeMethods.LMS_SetAntenna(_ptrLmsDevice, LMS_CH_RX, _channel, /*size_t*/ _ant) != 0)
                         {
                             throw new ApplicationException(NativeMethods.limesdr_strerror());
                         }
@@ -650,7 +695,7 @@ namespace SDRSharp.LimeSDR
                 {
                     if (_ptrLmsDevice != IntPtr.Zero)
                     {
-                        if (NativeMethods.LMS_GetGaindB(_ptrLmsDevice, LMS_CH_RX, _channel, ref _gain) != 0)
+                        if (NativeMethods.LMS_GetGaindB(_ptrLmsDevice, LMS_CH_RX, _channel, out _gain) != 0)
                         {
                             throw new ApplicationException(NativeMethods.limesdr_strerror());
                         }
