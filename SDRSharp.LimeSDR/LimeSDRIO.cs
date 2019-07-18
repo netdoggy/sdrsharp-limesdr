@@ -16,10 +16,10 @@ using SDRSharp.Common;
 
 namespace SDRSharp.LimeSDR
 {
-    public class LimeSDRIO : IFrontendController, IIQStreamController, IDisposable, IFloatingConfigDialogProvider, ITunableSource
-       //,IConfigurationPanelProvider /* panel on left menu (need access > 0)  but disables IFloatingConfigDialogProvider */
-       // buggy ,ISampleRateChangeSource
-       // , IControlAwareObject /* sdrsharp controls  (need access > 0)  */
+    public class LimeSDRIO : IFrontendController /*Open/Close*/, IIQStreamController /*Start(stream callback)/Stop*/, IDisposable, IFloatingConfigDialogProvider /*Gui*/, ITunableSource
+    //,IConfigurationPanelProvider /* panel on left menu (need access > 0)  but disables IFloatingConfigDialogProvider */
+    // buggy ,ISampleRateChangeSource
+    // , IControlAwareObject /* sdrsharp controls  (need access > 0)  */
     {
         #region variable
 
@@ -72,7 +72,7 @@ namespace SDRSharp.LimeSDR
             {
                 _channel = value;
 
-                if(_limeSDRDevice != null)
+                if (_limeSDRDevice != null)
                 {
                     _limeSDRDevice.Channel = _channel;
                 }
@@ -240,22 +240,22 @@ namespace SDRSharp.LimeSDR
         {
             try
             {
-               
+
                 _gui = new LimeSDRControllerDialog(this);
                 // shown only if frontend loaded with high access
                 _guiPanel = new ControllerPanel(this);
                 _gui.setPanel(_guiPanel);
                 _sampleRate = _gui._sampleRate;
             }
-            catch (Exception ex )
+            catch (Exception ex)
             {
-               // MessageBox.Show(ex.Message);
+                // MessageBox.Show(ex.Message);
                 LogError(ex);
                 throw ex;
             }
         }
 
-        public void LogError(Exception ex, string fileName  = "LimeSDR_Error.txt")
+        public void LogError(Exception ex, string fileName = "LimeSDR_Error.txt")
         {
             string message = string.Format("Time: {0}", DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt"));
             message += Environment.NewLine;
@@ -304,12 +304,13 @@ namespace SDRSharp.LimeSDR
             _callbackSamplesAvailable(this, e.Buffer, e.Length);
         }
 
+        // calling when change frontend driver / exit
         public void Close()
         {
-        
+
             if (_limeSDRDevice == null)
                 return;
-           
+
             _limeSDRDevice.SamplesAvailable -= LimeSDRDevice_SamplesAvailable;
             //_limeSDRDevice.SampleRateChanged -= LimeSDRDevice_SampleRateChanged;
             _limeSDRDevice.Dispose();
@@ -326,6 +327,7 @@ namespace SDRSharp.LimeSDR
         //    eventHandler((object)this, e);
         //}
 
+        // calling when selected frontend driver
         public void Open()
         {
             try
@@ -338,7 +340,7 @@ namespace SDRSharp.LimeSDR
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
-                throw ex; 
+                throw ex;
             }
         }
 
@@ -346,15 +348,16 @@ namespace SDRSharp.LimeSDR
         {
             try
             {
-                _gui.grpChannel.Enabled = false;
+                //_gui.grpChannel.Enabled = false;
                 _gui.samplerateComboBox.Enabled = false;
 
                 if (_limeSDRDevice == null)
                 {
-                    _limeSDRDevice = new LimeSDRDevice(this);
-                    _limeSDRDevice.SamplesAvailable += LimeSDRDevice_SamplesAvailable;
+                    this.Open();
+                    //_limeSDRDevice = new LimeSDRDevice(this);
+                    //_limeSDRDevice.SamplesAvailable += LimeSDRDevice_SamplesAvailable;
                     //_limeSDRDevice.SampleRateChanged += LimeSDRDevice_SampleRateChanged;
-                   //limeSDRDevice.SampleRate = _sampleRate;
+                    //limeSDRDevice.SampleRate = _sampleRate;
                 }
 
 
@@ -372,12 +375,12 @@ namespace SDRSharp.LimeSDR
                 _limeSDRDevice.LNAgain = _gui.LNAGain;
                 _limeSDRDevice.PGAgain = _gui.PGAGain;
                 _limeSDRDevice.TIAgain = _gui.TIAGain;
-                
+
                 //_isStreaming = true;
                 _gui.RefreshFormAllGains();
                 _gui.GetLimeSDRDeviceInfo();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _gui.grpChannel.Enabled = true;
                 _gui.samplerateComboBox.Enabled = true;
@@ -385,6 +388,12 @@ namespace SDRSharp.LimeSDR
                 // MessageBox.Show(ex.ToString());
                 throw ex;
             }
+        }
+
+        public void Restart()
+        {
+            this.Stop();
+            this.Start(_callbackSamplesAvailable);
         }
 
         //public void ReStart()
@@ -492,7 +501,7 @@ namespace SDRSharp.LimeSDR
             _gui.Hide();
         }
 
-      
+
         public void SetControl(object control)
         {
             this._control = (ISharpControl)control;
@@ -556,7 +565,7 @@ namespace SDRSharp.LimeSDR
             get { return 0; }
         }
 
-      
+
         public UserControl Gui
         {
             get

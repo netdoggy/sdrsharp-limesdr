@@ -322,24 +322,49 @@ namespace SDRSharp.LimeSDR
                 return;
             }
 
+
+            var prevChannel = _owner.Channel;
             if (rx0.Checked)
                 _owner.Channel = 0;
 
             Utils.SaveSetting("LimeSDR.RX0", rx0.Checked);
-        }
 
+            if (_owner.Channel != prevChannel)
+                ChangeChannel();
+        }
         private void rx1_CheckedChanged(object sender, EventArgs e)
         {
             if (!Initialized)
             {
                 return;
             }
-
+            var prevChannel = _owner.Channel;
             if (rx1.Checked)
                 _owner.Channel = 1;
 
             Utils.SaveSetting("LimeSDR.RX1", rx1.Checked);
+
+            if (_owner.Channel != prevChannel)
+                ChangeChannel();
         }
+
+        private void ChangeChannel()
+        {
+            if (!Initialized)
+            {
+                return;
+            }
+
+            if (_owner.Device != null && _owner.Device.IsStreaming)
+            {
+                _owner.Restart();
+                //var c = await System.Threading.Tasks.Task<int>.Factory.StartNew(() =>
+                //{                   
+                //});                
+                //MessageBox.Show("restarted channel");
+            }           
+        }
+ 
 
         private void ant_h_CheckedChanged(object sender, EventArgs e)
         {

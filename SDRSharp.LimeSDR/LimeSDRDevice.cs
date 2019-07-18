@@ -385,6 +385,12 @@ namespace SDRSharp.LimeSDR
                 throw new ApplicationException(str.Length > 1 ? str : "Cannot open LimeSDR device. Is the device locked somewhere?");
             }
 
+            //if (NativeMethods.LMS_EnableCache(_ptrLmsDevice, true) != 0)
+            //{
+            //    var str = NativeMethods.limesdr_strerror();
+            //    throw new ApplicationException(str.Length > 1 ? str : "LMS_EnableCache error");
+            //}
+            
             return true;
         }
 
@@ -637,7 +643,7 @@ namespace SDRSharp.LimeSDR
             }
             set
             {
-                _channel = value;
+                _channel = value;           
             }
         }
 

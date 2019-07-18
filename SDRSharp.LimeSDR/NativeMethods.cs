@@ -162,6 +162,9 @@ namespace SDRSharp.LimeSDR
         [DllImport(APIDLL, EntryPoint = "LMS_Disconnect", CallingConvention = CallingConvention.Cdecl)]
         public static extern int LMS_Disconnect(IntPtr device);
 
+        [DllImport(APIDLL, EntryPoint = "LMS_EnableCache", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int LMS_EnableCache(IntPtr device, [MarshalAs(UnmanagedType.U1)]bool enable);
+
         //[DllImport(APIDLL, EntryPoint = "LMS_IsOpen", CallingConvention = CallingConvention.Cdecl)]
         //public static extern bool LMS_IsOpen(IntPtr device, int port);
 
