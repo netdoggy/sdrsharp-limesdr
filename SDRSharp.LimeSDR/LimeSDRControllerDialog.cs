@@ -587,6 +587,13 @@ namespace SDRSharp.LimeSDR
                 "RxRate: " + Math.Round(lms_stream_status.linkRate / 1e6, 2).ToString() + " MB/s";
             toolStripStatusLabel_DroppedPackets.Text = (uint.Parse(toolStripStatusLabel_DroppedPackets.Text) + lms_stream_status.droppedPackets).ToString();
 
+            if (_owner.Device.IsStreaming && !lms_stream_status.active)
+            {
+                // does not work  .active always true
+                //  _owner.Stop();
+                // MessageBox.Show("LimeSDR Sreaming has been deactivated.");
+            }
+
         }
         public void RefreshLimeSdrTemp()
         {

@@ -126,7 +126,7 @@ namespace SDRSharp.LimeSDR
     {
         ///Indicates whether the stream is currently active
         [MarshalAs(UnmanagedType.U1)]
-        bool active;
+        public bool active;
         ///Number of samples in FIFO buffer
         public UInt32 fifoFilledCount;
         ///Size of FIFO buffer

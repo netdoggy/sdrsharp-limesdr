@@ -392,7 +392,8 @@ namespace SDRSharp.LimeSDR
         {
             if (NativeMethods.LMS_Close(_ptrLmsDevice) != 0)
             {
-                throw new ApplicationException("Cannot open LimeSDR device. Is the device locked somewhere?");
+                var str = NativeMethods.limesdr_strerror();
+                throw new ApplicationException(str.Length > 1 ? str : "Cannot cloe LimeSDR device. Is the device locked somewhere?");
             }
 
             _ptrLmsDevice = IntPtr.Zero;
@@ -500,6 +501,7 @@ namespace SDRSharp.LimeSDR
             _sampleThread.Name = "limesdr_samples_rx";
             _sampleThread.Priority = ThreadPriority.Highest;
             _sampleThread.Start();
+
         }
 
         public unsafe long Frequency
