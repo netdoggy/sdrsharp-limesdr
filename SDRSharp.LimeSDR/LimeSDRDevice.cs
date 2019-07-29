@@ -42,7 +42,7 @@ namespace SDRSharp.LimeSDR
 
         private double _sampleRate = DefaultSamplerate;
         private double _centerFrequency = DefaultFrequency;
-        private double _old_centerFrequency = DefaultFrequency;
+        //private double _old_centerFrequency = DefaultFrequency;
         private uint _gain = 40;
         private ushort _lnaGain = 9;
         private ushort _tiaGain = 1;
@@ -190,6 +190,7 @@ namespace SDRSharp.LimeSDR
             }
         }
 
+ 
         public double Temperature()
         {
             double temp = 0;

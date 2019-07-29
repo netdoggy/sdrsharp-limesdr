@@ -55,12 +55,19 @@ namespace SDRSharp.LimeSDR
                 tbLimeSDR_LNAGain.Value = Utils.GetIntSetting("LimeSDR.GainLNA", tbLimeSDR_LNAGain.Value); // default fron TrackBar defaultValue
                 tbLimeSDR_TIAGain.Value = Utils.GetIntSetting("LimeSDR.GainTIA", tbLimeSDR_TIAGain.Value);
                 tbLimeSDR_PGAGain.Value = Utils.GetIntSetting("LimeSDR.GainPGA", tbLimeSDR_PGAGain.Value);
+                tbLimeSDR_PGAGain.Value = Utils.GetIntSetting("LimeSDR.GainPGA", tbLimeSDR_PGAGain.Value);
+
+              
+
                 RefreshLabelLnaGain();
                 RefreshLabelTiaGain();
                 RefreshLabelPgaGain();
 
+                tbDcRemoval.Value = Utils.GetIntSetting("LimeSDR.DCRemove.TbValue", tbDcRemoval.Value);
+
                 gainBar_Scroll(this, EventArgs.Empty); // set device param from gui
-                trackBar1_Scroll(this, EventArgs.Empty); // set device param from gui
+                tbDcRemover_Scroll(this, EventArgs.Empty); // set device param from gui
+
                 lblLimeSDR_GainDB.Text = tbLimeSDR_Gain.Value.ToString() + "dB";
                 samplerateComboBox.SelectedValue = Int32.Parse(Utils.GetStringSetting("LimeSDR.SampleRate", "2304000"));
                 LPBWcomboBox.Text = Utils.GetStringSetting("LimeSDR.LPBW", "60MHz");
@@ -172,6 +179,14 @@ namespace SDRSharp.LimeSDR
             get
             {
                 return (ushort)tbLimeSDR_LNAGain.Value;
+            }
+        }
+
+        public float DcRemovalRatio
+        {
+            get
+            {
+                return DcRemovalConvertValueToRatio(tbDcRemoval.Value);
             }
         }
 
@@ -727,12 +742,19 @@ namespace SDRSharp.LimeSDR
            
         }
 
-        private void trackBar1_Scroll(object sender, EventArgs e)
+        private float DcRemovalConvertValueToRatio (int value)
+        {
+            return value > 1.0f ? 1.0f / (float)Math.Pow(1.85, value) : 1.0f; 
+        }
+        private void tbDcRemover_Scroll(object sender, EventArgs e)
         {
 
-            var ratio = trackBar1.Value > 1 ? 1.0 / (float)Math.Pow(1.85, trackBar1.Value) : 1.0;
+            
+            var ratio = DcRemovalConvertValueToRatio(tbDcRemoval.Value); // tbDcRemoval.Value > 1 ? 1.0 / (float)Math.Pow(1.85, tbDcRemoval.Value) : 1.0;
+            var l = (int)Math.Floor(Math.Log10(1/ratio)) + 3;
+            label18.Text = (ratio > 0.999999) ? "1(off)" : Math.Round(ratio, l).ToString();
 
-            label18.Text = (ratio > 0.999999) ? "1(off)" : ratio.ToString();
+            Utils.SaveSetting("LimeSDR.DCRemove.TbValue", tbDcRemoval.Value);
 
             if (_owner == null || _owner.Device == null)
                 return;

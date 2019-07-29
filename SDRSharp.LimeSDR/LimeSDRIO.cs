@@ -353,7 +353,7 @@ namespace SDRSharp.LimeSDR
 
                 if (_limeSDRDevice == null)
                 {
-                    this.Open();
+                    Open();
                     //_limeSDRDevice = new LimeSDRDevice(this);
                     //_limeSDRDevice.SamplesAvailable += LimeSDRDevice_SamplesAvailable;
                     //_limeSDRDevice.SampleRateChanged += LimeSDRDevice_SampleRateChanged;
@@ -375,6 +375,7 @@ namespace SDRSharp.LimeSDR
                 _limeSDRDevice.LNAgain = _gui.LNAGain;
                 _limeSDRDevice.PGAgain = _gui.PGAGain;
                 _limeSDRDevice.TIAgain = _gui.TIAGain;
+                _limeSDRDevice.dcRemovalRatio = _gui.DcRemovalRatio;
 
                 //_isStreaming = true;
                 _gui.RefreshFormAllGains();
